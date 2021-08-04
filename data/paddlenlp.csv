@@ -1,0 +1,5 @@
+BERT,		examples/language_model/bert
+Transformer,	examples/machine_translation/transformer
+ERNIE,		examples/language_model/ernie
+BiGRU_CRF,	examples/information_extraction/waybill_ie
+

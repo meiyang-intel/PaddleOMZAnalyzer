@@ -1,0 +1,5 @@
+OCR-DB,		configs/det/det_mv3_db.yml
+CRNN-CTC,	configs/rec/rec_mv3_none_bilstm_ctc.yml
+OCR-Clas,	configs/rec/rec_mv3_none_bilstm_ctc.yml
+OCR-E2E,	configs/rec/rec_mv3_none_bilstm_ctc.yml
+
