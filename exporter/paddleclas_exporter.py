@@ -3,12 +3,9 @@ import sys
 import subprocess
 import re
 import csv
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(__dir__, '../')))
-
-from common import PDModelInfo
 
 if __name__ == '__main__':
+    __dir__ = os.path.dirname(os.path.abspath(__file__))
     omz_dir = os.path.abspath(os.path.join(__dir__, '../../PaddleClas'))
     sys.path.append(omz_dir)  # OMZ PaddleClas
     os.chdir(omz_dir)
@@ -28,7 +25,7 @@ if __name__ == '__main__':
             pdprams_name = os.path.splitext(pdprams_name)[0]            
             pretraind_model = os.path.abspath(os.path.join(__dir__, '../downloader/paddleclas/{}'.format(pdprams_name)))
 
-            output_path = os.path.abspath(os.path.join(__dir__, 'paddleclas/{}'.format(pdprams_name)))
+            output_path = os.path.abspath(os.path.join(__dir__, 'paddleclas/{}'.format(config_base)))
 
             exporter_cmd = 'python3 tools/export_model.py --model {} --pretrained_model {} --output_path {} --class_dim 1000'.format(
                 config_base, pretraind_model, output_path)
