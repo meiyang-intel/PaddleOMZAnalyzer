@@ -2,11 +2,9 @@ import os
 
 import re
 
-from collections import namedtuple
-PDModelInfo=namedtuple('PDModelInfo', 'modelname pdconfig pdparams')
-
 import requests
 from bs4 import BeautifulSoup
+
 def scrape_pdparams(vgm_url):
     html_text = requests.get(vgm_url).text
     soup = BeautifulSoup(html_text, 'html.parser')
