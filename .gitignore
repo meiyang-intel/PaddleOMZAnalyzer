@@ -2,3 +2,4 @@ __pycache__
 downloader/paddleclas/
 *.pdparams
 *.pdmodel
+exporter/paddleclas/
