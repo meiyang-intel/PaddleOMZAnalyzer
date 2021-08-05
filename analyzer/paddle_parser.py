@@ -3,6 +3,8 @@ paddle.enable_static()
 import paddle.fluid as fluid
 import paddle.fluid.core as core
 
+import os
+
 def append_fetch_ops(program, fetch_target_names, fetch_holder_name='fetch'):
     """
     In this palce, we will add the fetch op
@@ -51,6 +53,8 @@ def get_ops(pdmodel_prefix):
 
 
 if __name__ == '__main__':
-    operator_set = get_ops('/home/cecilia/explore/PDPD/PaddleOMZAnalyzer/exporter/paddleclas/MobileNetV3_large_x1_0/inference')
+    __dir__ = os.path.dirname(os.path.abspath(__file__))
+    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddleclas/MobileNetV3_large_x1_0/inference'))
+    operator_set = get_ops(test_model)
 
     print(operator_set, len(operator_set))
