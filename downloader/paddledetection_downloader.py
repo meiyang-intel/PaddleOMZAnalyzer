@@ -89,10 +89,7 @@ class PaddleDetFilter(object):
                 # if still fail, throw exception to check scrapy rules.
                 if not cur_pdprams_url:
                     print('failed to get pdparams for {}, {}'.format(row[0], config_yaml))
-                    continue                          
-
-                
-        
+                    continue        
         return models
         
 def main(args):
