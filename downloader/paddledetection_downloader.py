@@ -34,7 +34,7 @@ if __name__ == '__main__':
     paths = Path(paddledet_folder).glob('**/*.md')
     #print(len(list(paths))) # NOTE: in-place list op
 
-    all_md_urls = set(())
+    all_md_urls = set(()) # use set instead of list to avoid duplicate item
     count_pdparams = 0
     for path in paths:      
         with open(path, 'r') as f:
@@ -47,32 +47,18 @@ if __name__ == '__main__':
 
             if len(list(tracks_pdparams))>0:
                 # debugging
-                tracks_ymls = soup.find_all('a', attrs={'href': re.compile(r'\.yml$')}, string=re.compile(r'^((?!\().)*$'))   
-                tracks_yamls = soup.find_all('a', attrs={'href': re.compile(r'\.yaml$')}, string=re.compile(r'^((?!\().)*$'))
-                print(path, len(list(tracks_pdparams)), len(tracks_ymls), len(tracks_yamls))
+                tracks_ymls = soup.find_all('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$')) # either yml or yaml   
+                print(path, len(list(tracks_pdparams)), len(tracks_ymls))
                 count_pdparams += len(list(tracks_pdparams))
 
-                pdparams_urls = set(()) # use set instead of list to avoid duplicate item
-                configs_urls = set(())
                 for track in tracks_pdparams:
-                    pdparams_url = '{}'.format(track['href'])
-                    pdparams_urls.add(pdparams_url)
-
-                    pdprams_basename = os.path.basename(pdparams_url)
-                    pdprams_basename = os.path.splitext(pdprams_basename)[0]
-
-                    if re.match(pdprams_basename, 'ssd_mobilenet_v1_300_120e_voc'):
-                        print(track.findNext('a', attrs={'href': re.compile(r'\.yml$')}, string=re.compile(r'^((?!\().)*$')))
-                    
-                    track_config = track.findNext('a', attrs={'href': re.compile(r'\.yml$')}, string=re.compile(r'^((?!\().)*$'))
+                    track_config = track.findNext('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$'))
                     if track_config is None:
-                        print('this track is none:', path, track)
-                        continue # ignore 
-                    configs_url = '{}'.format(track_config['href'])
-                    config_basename = os.path.basename(configs_url)
-                    config_basename = os.path.splitext(config_basename)[0]
+                        continue # ignore
 
-                    all_md_urls.add((config_basename, pdprams_basename))                        
+                    configs_url = '{}'.format(track_config['href'])
+                    pdparams_url = '{}'.format(track['href'])
+                    all_md_urls.add((configs_url, pdparams_url))
 
     print(len(all_md_urls), count_pdparams)
     with open('paddledet_urls.csv', 'w', newline='') as csvfile: # cache urls for debugging

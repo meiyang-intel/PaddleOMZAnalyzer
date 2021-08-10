@@ -38,5 +38,6 @@ if __name__ == '__main__':
             models.append(PDModelInfo(row[0], row[1], row[2], ','.join(operator_set), ','.join(unsupported_ops) if len(unsupported_ops)>0 else 'None'))
 
     with open('paddleclas_operators.csv', 'w', newline='') as csvfile:
+        # TODO: add title for each column
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerows(models)
