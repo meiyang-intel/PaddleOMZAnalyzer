@@ -1,8 +1,10 @@
 __pycache__
 downloader/paddleclas/
+downloader/paddleseg/
 *.pdparams
 *.pdmodel
 exporter/paddleclas/
 exporter/paddledet/
 exporter/paddlenlp/
+exporter/paddleseg/
 .vscode
