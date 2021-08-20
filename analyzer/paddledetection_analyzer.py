@@ -27,7 +27,6 @@ if __name__ == '__main__':
             print(exported_path)
 
             if os.path.exists(exported_path):
-                exported_path = '{}/model'.format(exported_path) # paddledetection exported as name "model.pdmodel"
                 operator_set = get_ops(exported_path)
                 print(config_base, operator_set, len(operator_set))
 

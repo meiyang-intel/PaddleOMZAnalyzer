@@ -29,7 +29,11 @@ class PaddleDetScraper(object):
 
         all_md_urls = set(()) # use set instead of list to avoid duplicate item
         count_pdparams = 0
-        for path in paths:      
+        for path in paths:
+            # TODO: will slim in another way
+            if str(path.parent)==os.path.join(self.homepage, 'configs/slim'):
+                continue
+            
             with open(path, 'r') as f:
                 text = f.read()
                 html_text = markdown.markdown(text)
@@ -40,8 +44,8 @@ class PaddleDetScraper(object):
 
                 if len(list(tracks_pdparams))>0:
                     # debugging
-                    tracks_ymls = soup.find_all('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$')) # either yml or yaml   
-                    print(path, len(list(tracks_pdparams)), len(tracks_ymls))
+                    # tracks_ymls = soup.find_all('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$')) # either yml or yaml   
+                    # print(path, len(list(tracks_pdparams)), len(tracks_ymls))
                     count_pdparams += len(list(tracks_pdparams))
 
                     for track in tracks_pdparams:
@@ -51,7 +55,7 @@ class PaddleDetScraper(object):
 
                         configs_url = '{}'.format(track_config['href'])
                         pdparams_url = '{}'.format(track['href'])
-                        all_md_urls.add((configs_url, pdparams_url))
+                        all_md_urls.add((path, configs_url, pdparams_url))
         print(len(all_md_urls), count_pdparams)
         return all_md_urls
 
@@ -61,30 +65,30 @@ class PaddleDetFilter(object):
 
     def __call__(self, all_md_urls, downdload=False):
         # collect model info of OMZ, cache to csv
-        models = []
+        models = set(()) # use set instead of list to avoid duplicate item
         with open(self.filter, newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
                 config_yaml = row[1] # configs/.../*.yml
                 config_yaml = ''.join(config_yaml.split()) # remove all whitespace'
-                # print(config_yaml)
+                print(config_yaml)
 
                 cur_pdprams_url = ''
 
                 # find the best matcher which is highly possible to be the correct config yml.
-                for (config_url, pdprams_url) in all_md_urls:
+                for (_, config_url, pdprams_url) in all_md_urls:
                       if re.search(config_yaml+'$', config_url):
                         cur_pdprams_url = pdprams_url
-                        models.append(PDModelInfo(row[0], config_yaml, cur_pdprams_url)) # possible more than one pdparams matches config yml , e.g. slim
+                        models.add(PDModelInfo(row[0], config_yaml, cur_pdprams_url)) # possible more than one pdparams matches config yml , e.g. slim
                 
                 # second chance, to match basename only
                 if not cur_pdprams_url:
                     config_base = os.path.basename(config_yaml)             
-                    for (config_url, pdprams_url) in all_md_urls:
+                    for (_, config_url, pdprams_url) in all_md_urls:
                         # print(config_yaml, config_url, re.match(config_yaml, config_url))
                         if re.search(config_base, config_url):
                             cur_pdprams_url = pdprams_url
-                            models.append(PDModelInfo(row[0], config_yaml, cur_pdprams_url))            
+                            models.add(PDModelInfo(row[0], config_yaml, cur_pdprams_url))            
                
                 # if still fail, throw exception to check scrapy rules.
                 if not cur_pdprams_url:
@@ -97,7 +101,7 @@ def main(args):
     det_scaper = PaddleDetScraper(homepage=os.path.abspath(os.path.join(__dir__, '../../PaddleDetection')))   
     all_md_urls = det_scaper()
     with open('paddledet_full.csv', 'w', newline='') as csvfile: # cache urls for debugging
-        headerList = ['pdconfig_url', 'pdparams_url']
+        headerList = ['markdown_file', 'pdconfig_url', 'pdparams_url']
         dw = csv.DictWriter(csvfile, delimiter=',', 
                             fieldnames=headerList)
         dw.writeheader()        
