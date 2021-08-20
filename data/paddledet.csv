@@ -1,12 +1,16 @@
 YoloV3-DarkNet53,	configs/yolov3/yolov3_darknet53_270e_voc.yml
+YoloV3-DarkNet53 (phase1),	configs/yolov3/yolov3_darknet53_270e_coco.yml
 YoloV3-ResNet50_vd,	configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml
 YoloV4,			static/configs/yolov4/yolov4_cspdarknet_coco.yml
+YoloV4,			static/configs/yolov4/yolov4_cspdarknet_voc.yml
 SSD-MobileNetV1,	configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml
 SSD-MobileNetV3,	configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml
 Mask RCNN,		configs/mask_rcnn/mask_rcnn_r50_1x_coco.yml
 Faster RCNN,		configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml
 PP-Yolo,		configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml
+PP-Yolo (phase1),        configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml
 PP-Yolo v2,		configs/ppyolo/ppyolov2_r50vd_dcn_voc.yml
+PP-Yolo v2,		configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml
 PP-Yolo tiny,		configs/ppyolo/ppyolo_tiny_650e_coco.yml
 SOLO v2,		configs/solov2/solov2_r50_fpn_1x_coco.yml
 Faster R-CNN + FPN,	configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.yml
