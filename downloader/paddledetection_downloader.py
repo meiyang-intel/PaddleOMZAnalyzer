@@ -119,4 +119,10 @@ if __name__ == "__main__":
     main(args) 
 
     # display
-    print(pandas.read_csv('paddledet_filtered.csv'))    
+    print(pandas.read_csv('paddledet_filtered.csv'))
+'''
+failed to get pdparams for YoloV3-DarkNet53, configs/yolov3/yolov3_darknet53_270e_voc.yml
+failed to get pdparams for YoloV4, static/configs/yolov4/yolov4_cspdarknet_coco.yml
+failed to get pdparams for SSD-MobileNetV3, configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml
+failed to get pdparams for PP-Yolo v2, configs/ppyolo/ppyolov2_r50vd_dcn_voc.yml
+'''

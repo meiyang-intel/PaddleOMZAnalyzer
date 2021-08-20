@@ -4,6 +4,16 @@ import subprocess
 import re
 import csv
 
+# reference:
+# https://github.com/PaddlePaddle/PaddleClas/blob/release/2.1/docs/en/tutorials/getting_started_en.md#4-use-the-inference-model-to-predict
+#
+# python tools/export_model.py \
+#     --model MobileNetV3_large_x1_0 \
+#     --pretrained_model ./output/MobileNetV3_large_x1_0/best_model/ppcls \
+#     --output_path ./inference \
+#     --class_dim 1000
+
+
 if __name__ == '__main__':
     __dir__ = os.path.dirname(os.path.abspath(__file__))
     omz_dir = os.path.abspath(os.path.join(__dir__, '../../PaddleClas'))
