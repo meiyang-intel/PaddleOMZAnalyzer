@@ -34,7 +34,7 @@ if __name__ == '__main__':
             # pdprams_name = os.path.splitext(pdprams_name)[0]            
             # pretraind_model = os.path.abspath(os.path.join(__dir__, '../downloader/paddledet/{}'.format(pdprams_name)))
 
-            output_path = os.path.abspath(os.path.join(__dir__, 'paddledet/{}'.format(config_base)))
+            output_path = os.path.abspath(os.path.join(__dir__, 'paddledet')) # paddledetection will append modelname as its exported dirname.
 
             exporter_cmd = 'python3 tools/export_model.py -c {} -o use_gpu=false weights={} TestReader.inputs_def.image_shape=[3,608,608] --output_dir {}'.format(
                 config_yaml, pdparams_url, output_path)

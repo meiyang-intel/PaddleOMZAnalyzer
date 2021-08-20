@@ -3,3 +3,4 @@ downloader/paddleclas/
 *.pdparams
 *.pdmodel
 exporter/paddleclas/
+exporter/paddledet/

@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # print(sorted(paddle_frontend_supported_ops),len(paddle_frontend_supported_ops))
     models = []
-    with open(os.path.abspath(os.path.join(__dir__, '../downloader/paddleclas_full.csv')), newline='') as csvfile:
+    with open(os.path.abspath(os.path.join(__dir__, '../downloader/paddledet_filtered.csv')), newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
             config_yaml = row[1]
@@ -23,13 +23,13 @@ if __name__ == '__main__':
             config_base = os.path.basename(config_yaml)
             config_base = os.path.splitext(config_base)[0]
 
-            exported_path = os.path.abspath(os.path.join(__dir__, '../exporter/paddleclas/{}'.format(config_base)))
+            exported_path = os.path.abspath(os.path.join(__dir__, '../exporter/paddledet/{}'.format(config_base)))
             print(exported_path)
 
             if os.path.exists(exported_path):
-                exported_path = '{}/inference'.format(exported_path) # paddleclas exported as name "inference.pdmodel"
+                exported_path = '{}/model'.format(exported_path) # paddledetection exported as name "model.pdmodel"
                 operator_set = get_ops(exported_path)
-                # print(config_base, operator_set, len(operator_set))
+                print(config_base, operator_set, len(operator_set))
 
                 # pick out unsupported operators
                 unsupported_ops = []
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             else: # keep ERROR
                 models.append(PDModelInfo(row[0], row[1], row[2], 'ERROR', 'ERROR'))
 
-    with open('paddleclas_operators.csv', 'w', newline='') as csvfile:
+    with open('paddledet_operators.csv', 'w', newline='') as csvfile:
         # TODO: add title for each column
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerows(models)
