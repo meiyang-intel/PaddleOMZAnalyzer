@@ -17,6 +17,18 @@ https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.1/docs/model_export.md
 It provides exported model, directly download inference_model.
 https://github.com/PaddlePaddle/PaddleOCR#pp-ocr-20-series-model-listupdate-on-dec-15 
 #### 5. PaddleNLP
+[NLP pretrained model summary]
+https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
+
+[BERT]
+https://github.com/PaddlePaddle/PaddleNLP/tree/develop/examples/language_model/bert#%E9%A2%84%E6%B5%8B
+
+[Transformer]
+https://github.com/PaddlePaddle/PaddleNLP/tree/develop/examples/machine_translation/transformer#%E5%AF%BC%E5%87%BA%E9%9D%99%E6%80%81%E5%9B%BE%E9%A2%84%E6%B5%8B%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%A2%84%E6%B5%8B%E5%BC%95%E6%93%8E%E9%A2%84%E6%B5%8B
+
+[BiGRU_CRF]
+https://github.com/PaddlePaddle/PaddleNLP/tree/develop/examples/information_extraction/waybill_ie
+
 
 ## exporter example of Paddle OMZ
 1. PaddleClas
