@@ -14,3 +14,4 @@ YoloV4,static/configs/yolov4/yolov4_cspdarknet_voc.yml,https://paddlemodels.bj.b
 Mask RCNN,configs/mask_rcnn/mask_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_1x_coco.pdparams
 Faster RCNN,configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_1x_coco.pdparams
 PP-Yolo,configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_2x_coco.pdparams
+SSD-MobileNetV3,	configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams
