@@ -5,3 +5,4 @@ downloader/paddleclas/
 exporter/paddleclas/
 exporter/paddledet/
 exporter/paddlenlp/
+.vscode
