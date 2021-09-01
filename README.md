@@ -19,6 +19,7 @@ https://github.com/PaddlePaddle/PaddleOCR#pp-ocr-20-series-model-listupdate-on-d
 #### 5. PaddleNLP
 [NLP pretrained model summary]
 https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
+https://github.com/PaddlePaddle/PaddleNLP/blob/develop/docs/model_zoo/transformers.rst
 
 [BERT]
 https://github.com/PaddlePaddle/PaddleNLP/tree/develop/examples/language_model/bert#%E9%A2%84%E6%B5%8B

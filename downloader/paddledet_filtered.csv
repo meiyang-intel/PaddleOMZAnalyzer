@@ -1,17 +1,17 @@
-HRNet,configs/keypoint/hrnet/hrnet_w32_384x288.yml,https://paddledet.bj.bcebos.com/models/keypoint/hrnet_w32_384x288.pdparams
-BlazeFace,static/configs/face_detection/blazeface_keypoint.yml,https://paddlemodels.bj.bcebos.com/object_detection/blazeface_keypoint.pdparams
-YoloV3-ResNet50_vd,configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_r50vd_dcn_270e_coco.pdparams
-SSD-MobileNetV1,configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml,https://paddledet.bj.bcebos.com/models/ssd_mobilenet_v1_300_120e_voc.pdparams
+Faster RCNN,configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_1x_coco.pdparams
 PP-Yolo v2,configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolov2_r50vd_dcn_365e_coco.pdparams
 YoloV3-DarkNet53 (phase1),configs/yolov3/yolov3_darknet53_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_darknet53_270e_coco.pdparams
-PP-Yolo tiny,configs/ppyolo/ppyolo_tiny_650e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_tiny_650e_coco.pdparams
-PP-Yolo (phase1),configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_1x_coco.pdparams
-SOLO v2,configs/solov2/solov2_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/solov2_r50_fpn_1x_coco.pdparams
-Mask R-CNN + FPN,configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_fpn_1x_coco.pdparams
-HigherHRNet,configs/keypoint/higherhrnet/higherhrnet_hrnet_w32_640.yml,https://paddledet.bj.bcebos.com/models/keypoint/higherhrnet_hrnet_w32_640.pdparams
-Faster R-CNN + FPN,configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_fpn_1x_coco.pdparams
+HRNet,configs/keypoint/hrnet/hrnet_w32_384x288.yml,https://paddledet.bj.bcebos.com/models/keypoint/hrnet_w32_384x288.pdparams
 YoloV4,static/configs/yolov4/yolov4_cspdarknet_voc.yml,https://paddlemodels.bj.bcebos.com/object_detection/yolov4_cspdarknet_voc.pdparams
+Mask R-CNN + FPN,configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_fpn_1x_coco.pdparams
+SOLO v2,configs/solov2/solov2_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/solov2_r50_fpn_1x_coco.pdparams
+HigherHRNet,configs/keypoint/higherhrnet/higherhrnet_hrnet_w32_640.yml,https://paddledet.bj.bcebos.com/models/keypoint/higherhrnet_hrnet_w32_640.pdparams
 Mask RCNN,configs/mask_rcnn/mask_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_1x_coco.pdparams
-Faster RCNN,configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_1x_coco.pdparams
+PP-Yolo (phase1),configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_1x_coco.pdparams
+Faster R-CNN + FPN,configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_fpn_1x_coco.pdparams
+SSD-MobileNetV1,configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml,https://paddledet.bj.bcebos.com/models/ssd_mobilenet_v1_300_120e_voc.pdparams
+YoloV3-ResNet50_vd,configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_r50vd_dcn_270e_coco.pdparams
+BlazeFace,static/configs/face_detection/blazeface_keypoint.yml,https://paddlemodels.bj.bcebos.com/object_detection/blazeface_keypoint.pdparams
 PP-Yolo,configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_2x_coco.pdparams
-SSD-MobileNetV3,	configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams
+PP-Yolo tiny,configs/ppyolo/ppyolo_tiny_650e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_tiny_650e_coco.pdparams
+SSD-MobileNetV3,       configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams

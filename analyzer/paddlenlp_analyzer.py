@@ -28,8 +28,21 @@ if __name__ == '__main__':
     __dir__ = os.path.dirname(os.path.abspath(__file__))
 
     #BERT
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/bert'))
-    operator_set, unsupported_ops = parse_model_ops(test_model)
+    bert_all = ['bert-base-uncased', 
+                'bert-large-uncased', 
+                'bert-base-cased',
+                'bert-large-cased',
+                'bert-base-multilingual-uncased',
+                'bert-base-multilingual-cased',
+                'bert-base-chinese',
+                'bert-wwm-chinese',
+                'bert-wwm-ext-chinese',
+                'simbert-base-chinese'
+                ]
+    for bert in bert_all:
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/{}'.format(bert)))
+        if os.path.exists(test_model):
+            operator_set, unsupported_ops = parse_model_ops(test_model)
 
     # waybill_ie
     test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/waybill_ie'))
