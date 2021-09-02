@@ -47,3 +47,20 @@ if __name__ == '__main__':
     # waybill_ie
     test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/waybill_ie'))
     operator_set, unsupported_ops = parse_model_ops(test_model)
+
+    # transformer
+    # base
+    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/base'))
+    operator_set, unsupported_ops = parse_model_ops(test_model)
+    # big
+    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/big'))
+    operator_set, unsupported_ops = parse_model_ops(test_model)
+
+
+'''
+model operator_set len(operator_set) unsupported_ops len(unsupported_ops)
+paddlenlp/bert ['cast', 'cumsum', 'dropout', 'elementwise_add', 'elementwise_sub', 'equal', 'fill_any_like', 'fill_constant', 'gelu', 'layer_norm', 'lookup_table_v2', 'matmul', 'matmul_v2', 'reshape2', 'scale', 'slice', 'softmax', 'tanh', 'transpose2', 'unsqueeze2'] 20 ['cumsum', 'fill_any_like', 'gelu', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'tanh'] 7
+paddlenlp/waybill_ie ['cast', 'cumsum', 'dropout', 'elementwise_add', 'elementwise_sub', 'equal', 'fill_any_like', 'fill_constant', 'layer_norm', 'lookup_table_v2', 'matmul', 'matmul_v2', 'relu', 'reshape2', 'scale', 'softmax', 'transpose2', 'unsqueeze2'] 18 ['cumsum', 'fill_any_like', 'layer_norm', 'lookup_table_v2', 'matmul_v2'] 5
+paddlenlp/transformer/base ['assign_value', 'cast', 'dropout', 'elementwise_add', 'elementwise_mul', 'equal', 'expand', 'fill_constant', 'fill_constant_batch_size_like', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'logical_not', 'lookup_table_v2', 'matmul', 'matmul_v2', 'not_equal', 'range', 'reduce_all', 'relu', 'reshape2', 'scale', 'shape', 'slice', 'softmax', 'tensor_array_to_tensor', 'transpose2', 'unsqueeze2', 'while'] 29 ['expand', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'not_equal', 'reduce_all', 'tensor_array_to_tensor', 'while'] 10
+paddlenlp/transformer/big ['assign_value', 'cast', 'dropout', 'elementwise_add', 'elementwise_mul', 'equal', 'expand', 'fill_constant', 'fill_constant_batch_size_like', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'logical_not', 'lookup_table_v2', 'matmul', 'matmul_v2', 'not_equal', 'range', 'reduce_all', 'relu', 'reshape2', 'scale', 'shape', 'slice', 'softmax', 'tensor_array_to_tensor', 'transpose2', 'unsqueeze2', 'while'] 29 ['expand', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'not_equal', 'reduce_all', 'tensor_array_to_tensor', 'while'] 10
+'''
