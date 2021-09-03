@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import numpy as np
 
 __dir__ = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(__dir__)
@@ -13,6 +14,7 @@ import paddle
 from abc import ABCMeta, abstractmethod
 
 from utils import is_float_tensor, randtool, get_tensor_dtype
+from openvino.inference_engine import IENetwork, IECore, ExecutableNetwork
 
 class Executor(object):
     __metaclass__ = ABCMeta
@@ -74,11 +76,10 @@ class Executor(object):
         """
         pass
 
-    def run(self, batch_size):
+    def run(self, test_inputs):
         """
         Generate input randomly, and inferencing
         """
-        test_inputs = self.generate_inputs(batch_size)
 
         # inference
         self.inference(test_inputs)
@@ -112,7 +113,28 @@ class PaddleExecutor(Executor):
     def inference(self, inputs:dict, warmup=0, benchmarking=False):
         # run
         self.inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets)
-       
+
+class OpenvinoExecutor(Executor):
+    def __init__(self, pdmodel):
+        super().__init__(pdmodel)
+        self.ie = IECore()
+        self.net = self.ie.read_network(self.__pdmodel__)
+
+    def inference(self, inputs:dict, warmup=0, benchmarking=False):
+        input_key = list(self.net.input_info.items())[0][0]
+        self.net.reshape({input_key: inputs[input_key].shape})
+        self.exec_net = self.ie.load_network(self.net, 'CPU') # device
+        assert isinstance(self.exec_net, ExecutableNetwork)
+        self.inference_results = self.exec_net.infer(inputs)
+        self.inference_results = list(self.inference_results.values())
+
+def top_k(result, topk=5):
+    indices = np.argsort(-result[0])
+
+    # TopK
+    for i in range(topk):
+        print("classid:  ", indices[0][i], ", probability:  ", result[0][0][indices[0][i]], "\n")
+
 def main():
     args = parse_args()
 
@@ -120,9 +142,19 @@ def main():
     test_model = os.path.abspath(args.model_file)
 
     pdpd_executor = PaddleExecutor(test_model)
-    pdpd_executor.run(args.batch_size)
+    test_inputs = pdpd_executor.generate_inputs(args.batch_size)
+    pdpd_executor.run(test_inputs)
     pdpd_result = pdpd_executor.get_inference_results()
     print('\nresult of paddle:', type(pdpd_result))
+    #print('\nresult of paddle:', pdpd_result)
+    top_k(pdpd_result)
+
+    ov_executor = OpenvinoExecutor(test_model)
+    ov_executor.run(test_inputs)
+    ov_result = ov_executor.get_inference_results()
+    print('\nresult of openvino:', type(ov_result))
+    #print('\nresult of openvino:', ov_result)
+    top_k(ov_result)
     
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -131,4 +163,4 @@ def parse_args():
     return parser.parse_args() 
 
 if __name__ == "__main__":
-    main()      
+    main()
