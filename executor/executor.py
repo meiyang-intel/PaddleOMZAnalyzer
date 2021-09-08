@@ -30,7 +30,7 @@ class Executor(object):
 
         self.inputs_info = dict()  # shape, dtype of inputs
         self.outputs_info = dict() # shape, dtype of outputs
-        self.inference_results = None # inference results, may vary from excutor inheriates.??
+        self.inference_results = dict() # note: make inference results of each executor be dict for comparision.
 
     def get_inputs_info(self):
         """
@@ -91,6 +91,13 @@ class Executor(object):
         self.inference(test_inputs)
 
 class PaddleExecutor(Executor):
+    """
+    inputs of Paddle are dict.
+    outputs possibly either - 
+    1. list of numpy.ndarray/numpy.generic, or LodTensor, depends on 'return_numpy', 
+    or,
+    2. numpy.ndarray.
+    """    
     def __init__(self, pdmodel):
         super().__init__(pdmodel)
 
@@ -116,11 +123,32 @@ class PaddleExecutor(Executor):
             print('model input name {} with shape {}, dtype {}'.format(ipt, var.shape, var.dtype))
             self.inputs_info[ipt] = (var.shape, var.dtype)
 
+        # workaround for yolo and ppyolo,
+        # which requires return_numpy False, else exception prompts from Paddle.
+        self.return_numpy = True
+        # 输出计算图所有结点信息
+        for i, op in enumerate(self.inference_program.blocks[0].ops):
+            if op.type in { 'matrix_nms', 'multiclass_nms3', 'multiclass_nms2', 'multiclass_nms' }:
+                self.return_numpy = False
+
     def inference(self, inputs:dict, warmup=0, benchmarking=False):
         # run
-        self.inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets, return_numpy=False)
+        inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets, return_numpy = self.return_numpy)
+
+        # debug info
+        print("PaddleExecutor inference results type {}, len {}, type of element {}".format(type(inference_results), len(inference_results), type(inference_results[0])))
+        
+        # if self.return_numpy is False: # workaround for yolo and ppyolo.. no need care, as compare() will handle it.
+        #     inference_results = [np.array(res) for res in inference_results]
+
+        # convert inference results to dict, in order to compare to openvino results.
+        for i in range(len(self.fetch_targets)):
+            self.inference_results[self.fetch_targets[i].name] = inference_results[i]
 
 class OpenvinoExecutor(Executor):
+    """
+    inputs and outputs of OpenVINO are dict.
+    """
     def __init__(self, pdmodel):
         super().__init__(pdmodel)
         self.ie = IECore()
@@ -134,13 +162,13 @@ class OpenvinoExecutor(Executor):
         self.exec_net = self.ie.load_network(self.net, 'CPU') # device
         assert isinstance(self.exec_net, ExecutableNetwork)
         self.inference_results = self.exec_net.infer(inputs)
-        self.inference_results = list(self.inference_results.values())
+        assert(type(self.inference_results) == dict)
 
 def compare(result, expect, delta=1e-6, rtol=1e-6):
     """
     比较函数
-    :param result: 输入值
-    :param expect: 输出值
+    :param result: openvino
+    :param expect: paddlepaddle
     :param delta: 误差值
     :return: True or False
     """
@@ -150,14 +178,16 @@ def compare(result, expect, delta=1e-6, rtol=1e-6):
         strDtype = str(result.dtype)
         if strDtype.startswith('int') or strDtype.startswith('uint'):
             rtol = 0
-        res = np.allclose(result, expect, atol=delta, rtol=rtol, equal_nan=False)
+        res = np.allclose(result, expect, atol=delta, rtol=rtol, equal_nan=True)
+        if res is False:
+            print(result, expect)
         return res
     elif type(result) == list:
         for i in range(len(result)):
             if isinstance(result[i], (np.generic, np.ndarray)):
                 res = compare(result[i], expect[i], delta, rtol)
             else:
-                res = compare(result[i].numpy(), expect[i], delta, rtol)
+                res = compare(result[i], expect[i].numpy(), delta, rtol)
 
             if res is not True:
                 return False
@@ -182,6 +212,8 @@ def inference_and_compare(model_file, batch_size):
         ov_result = ov_executor.get_inference_results()
 
         # compare openvino result and paddle result
+        ov_result = [ov_result[k] for k in sorted(ov_result)]
+        pdpd_result = [pdpd_result[k] for k in sorted(pdpd_result)]   
         return compare(ov_result, pdpd_result)
     else:
         return False
