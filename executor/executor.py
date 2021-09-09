@@ -11,6 +11,7 @@ sys.path.append(__dir__)
 sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 import paddle
+import paddle.inference as paddle_infer
 # from paddle.inference import Config
 # from paddle.inference import create_predictor
 
@@ -93,11 +94,11 @@ class Executor(object):
 class PaddleExecutor(Executor):
     """
     inputs of Paddle are dict.
-    outputs possibly either - 
-    1. list of numpy.ndarray/numpy.generic, or LodTensor, depends on 'return_numpy', 
+    outputs possibly either -
+    1. list of numpy.ndarray/numpy.generic, or LodTensor, depends on 'return_numpy',
     or,
     2. numpy.ndarray.
-    """    
+    """
     def __init__(self, pdmodel):
         super().__init__(pdmodel)
 
@@ -137,13 +138,38 @@ class PaddleExecutor(Executor):
 
         # debug info
         print("PaddleExecutor inference results type {}, len {}, type of element {}".format(type(inference_results), len(inference_results), type(inference_results[0])))
-        
+
         # if self.return_numpy is False: # workaround for yolo and ppyolo.. no need care, as compare() will handle it.
         #     inference_results = [np.array(res) for res in inference_results]
 
         # convert inference results to dict, in order to compare to openvino results.
         for i in range(len(self.fetch_targets)):
             self.inference_results[self.fetch_targets[i].name] = inference_results[i]
+
+class PaddlePredictorExecutor(Executor):
+    """
+    inputs and outputs of PaddlePredictor are dict.
+    """
+    def __init__(self, pdmodel, pdiparams):
+        super().__init__(pdmodel)
+        self.pdiparams = pdiparams
+        self.config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
+        self.predictor = paddle_infer.create_predictor(self.config)
+
+    def inference(self, inputs:dict, warmup=0, benchmarking=False):
+        input_names = self.predictor.get_input_names()
+        for input_name in input_names:
+            input_handle = self.predictor.get_input_handle(input_name)
+            input_handle.reshape(inputs[input_name].shape)
+            input_handle.copy_from_cpu(inputs[input_name])
+
+        self.predictor.run()
+
+        output_names = self.predictor.get_output_names()
+        for output_name in output_names:
+            output_handle = self.predictor.get_output_handle(output_name)
+            self.inference_results[output_name] = output_handle.copy_to_cpu()
+
 
 class OpenvinoExecutor(Executor):
     """
@@ -211,10 +237,23 @@ def inference_and_compare(model_file, batch_size):
         ov_executor.run(test_inputs)
         ov_result = ov_executor.get_inference_results()
 
+        ## create pdiparams file path
+        dir_name = os.path.dirname(model_file)
+        config_base = os.path.basename(model_file)
+        config_base = os.path.splitext(config_base)[0]
+        model_params_file = dir_name + '/' + config_base + '.pdiparams'
+
+        ## paddle predictor inference
+        pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), model_params_file)
+        pdpd_predict_executor.run(test_inputs)
+        pdpd_predict_result = pdpd_predict_executor.get_inference_results()
+        print(type(pdpd_predict_result))
+
         # compare openvino result and paddle result
         ov_result = [ov_result[k] for k in sorted(ov_result)]
-        pdpd_result = [pdpd_result[k] for k in sorted(pdpd_result)]   
-        return compare(ov_result, pdpd_result)
+        pdpd_result = [pdpd_result[k] for k in sorted(pdpd_result)]
+        pdpd_predict_result = [pdpd_predict_result[k] for k in sorted(pdpd_predict_result)]
+        return compare(ov_result, pdpd_result) and compare(ov_result, pdpd_predict_result)
     else:
         return False
 
@@ -318,7 +357,3 @@ def parse_args():
 
 if __name__ == "__main__":
     main()
-
-
-
-
