@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import time
 import logging
 import numpy as np
 from pathlib import Path
@@ -18,7 +19,7 @@ import paddle.inference as paddle_infer
 from abc import ABCMeta, abstractmethod
 
 from utils import is_float_tensor, randtool, get_tensor_dtype
-from openvino.inference_engine import IENetwork, IECore, ExecutableNetwork
+from openvino.inference_engine import IENetwork, IECore, ExecutableNetwork, StatusCode
 from collections import namedtuple
 #PDModelInfo=namedtuple('PDModelInfo', 'modelname pdconfig pdparams compare_result')
 PDModelInfo=namedtuple('PDModelInfo', 'modelname pdconfig pdmodel compare_result')
@@ -76,20 +77,20 @@ class Executor(object):
         return self.inference_results
 
     @abstractmethod
-    def inference(self, inputs:dict, warmup=0, benchmarking=False):
+    def inference(self, inputs:dict, warmup=0, repeats=1):
         """
         Inferencing
         inputs [in] a dict of input name and tensor.
         """
         pass
 
-    def run(self, test_inputs):
+    def run(self, test_inputs, warmup=0, repeats=1):
         """
         Generate input randomly, and inferencing
         """
 
         # inference
-        self.inference(test_inputs)
+        self.inference(test_inputs, warmup, repeats)
 
 class PaddleExecutor(Executor):
     """
@@ -132,9 +133,18 @@ class PaddleExecutor(Executor):
             if op.type in { 'matrix_nms', 'multiclass_nms3', 'multiclass_nms2', 'multiclass_nms' }:
                 self.return_numpy = False
 
-    def inference(self, inputs:dict, warmup=0, benchmarking=False):
-        # run
-        inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets, return_numpy = self.return_numpy)
+    def inference(self, inputs:dict, warmup=0, repeats=1):
+        #warm up
+        for i in range(warmup):
+            inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets, return_numpy = self.return_numpy)
+
+        #repeats
+        t1 = time.time()
+        for i in range(repeats):
+            inference_results = self.exe.run(self.inference_program, feed=inputs, fetch_list=self.fetch_targets, return_numpy = self.return_numpy)
+        t2 = time.time()
+        ms = (t2 - t1) * 1000.0 / repeats
+        print("PaddleExecutor Inference: {} ms per batch image".format(ms))
 
         # debug info
         print("PaddleExecutor inference results type {}, len {}, type of element {}".format(type(inference_results), len(inference_results), type(inference_results[0])))
@@ -154,16 +164,26 @@ class PaddlePredictorExecutor(Executor):
         super().__init__(pdmodel)
         self.pdiparams = pdiparams
         self.config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
+        self.config.enable_mkldnn()
         self.predictor = paddle_infer.create_predictor(self.config)
 
-    def inference(self, inputs:dict, warmup=0, benchmarking=False):
+    def inference(self, inputs:dict, warmup=0, repeats=1):
         input_names = self.predictor.get_input_names()
         for input_name in input_names:
             input_handle = self.predictor.get_input_handle(input_name)
             input_handle.reshape(inputs[input_name].shape)
             input_handle.copy_from_cpu(inputs[input_name])
+        #warmup
+        for i in range(warmup):
+            self.predictor.run()
 
-        self.predictor.run()
+        #repeats
+        t1 = time.time()
+        for i in range(repeats):
+            self.predictor.run()
+        t2 = time.time()
+        ms = (t2 - t1) * 1000.0 / repeats
+        print("PaddlePredictorExecutor Inference: {} ms per batch image".format(ms))
 
         output_names = self.predictor.get_output_names()
         for output_name in output_names:
@@ -175,20 +195,72 @@ class OpenvinoExecutor(Executor):
     """
     inputs and outputs of OpenVINO are dict.
     """
-    def __init__(self, pdmodel):
+    def __init__(self, pdmodel, number_infer_requests: int = None, api_type: str = 'sync'):
         super().__init__(pdmodel)
         self.ie = IECore()
+        self.api_type = api_type
+        self.nireq = number_infer_requests
         self.net = self.ie.read_network(self.__pdmodel__)
 
-    def inference(self, inputs:dict, warmup=0, benchmarking=False):
+    def inference(self, inputs:dict, warmup=0, repeats=1):
+        # reshape the net work
         reshape_dict = {}
         for item in list(self.net.input_info.items()):
             reshape_dict[item[0]]=inputs[item[0]].shape
         self.net.reshape(reshape_dict)
-        self.exec_net = self.ie.load_network(self.net, 'CPU') # device
+
+        # create executable network
+        self.exec_net = self.ie.load_network(self.net, 'CPU', num_requests=1 if self.api_type == 'sync' else self.nireq or 0) # device
+        self.nireq = len(self.exec_net.requests)
+        self.niter = repeats
+        print("OpenvinoExecutor final repeats:", self.nireq)
         assert isinstance(self.exec_net, ExecutableNetwork)
-        self.inference_results = self.exec_net.infer(inputs)
-        assert(type(self.inference_results) == dict)
+
+        #warmup
+        for i in range(warmup):
+            infer_request = self.exec_net.requests[0]
+            if self.api_type == 'sync':
+                infer_request.infer(inputs)
+            else:
+                infer_request.async_infer(inputs)
+                status = infer_request.wait()
+                if status != StatusCode.OK:
+                    print("Wait for request is failed with status code {status}!")
+                    return
+
+        #inference
+        infer_requests = self.exec_net.requests
+        iteration = 0
+        t1 = time.time()
+
+        times = []
+        in_fly = set()
+        while (self.niter and iteration < self.niter):
+            if self.api_type == 'sync':
+                self.inference_results = self.exec_net.infer(inputs)
+            else:
+                infer_request_id = self.exec_net.get_idle_request_id()
+                if infer_request_id < 0:
+                    status = self.exec_net.wait(num_requests=1)
+                    if status != StatusCode.OK:
+                        raise Exception("Wait for idle request failed!")
+                    infer_request_id = self.exec_net.get_idle_request_id()
+                    if infer_request_id < 0:
+                        raise Exception("Invalid request id!")
+                in_fly.add(infer_request_id)
+                infer_requests[infer_request_id].async_infer(inputs)
+            iteration += 1
+
+        # wait the latest inference executions
+        status = self.exec_net.wait()
+        if status != StatusCode.OK:
+            raise Exception(f"Wait for all requests is failed with status code {status}!")
+
+        t2 = time.time()
+        ms = (t2 - t1) * 1000.0 / repeats
+        print("OpenvinoExecutor Inference: {} ms per batch image".format(ms))
+
+        #assert(type(self.inference_results) == dict)
 
 def compare(result, expect, delta=1e-6, rtol=1e-6):
     """
@@ -223,18 +295,18 @@ def compare(result, expect, delta=1e-6, rtol=1e-6):
 
     return True
 
-def inference_and_compare(model_file, batch_size):
+def inference_and_compare(model_file, test_mode, batch_size, warmup=0, repeats=1):
     if os.path.exists(model_file):
         #inference
         ## paddle inference
         pdpd_executor = PaddleExecutor(model_file)
         test_inputs = pdpd_executor.generate_inputs(batch_size)
-        pdpd_executor.run(test_inputs)
-        pdpd_result = pdpd_executor.get_inference_results()
 
-        ## paddle inference
+        ## openvino inference
         ov_executor = OpenvinoExecutor(model_file)
-        ov_executor.run(test_inputs)
+        if test_mode == 'performance':
+            ov_executor = OpenvinoExecutor(model_file, 10, 'async')
+        ov_executor.run(test_inputs, warmup, repeats)
         ov_result = ov_executor.get_inference_results()
 
         ## create pdiparams file path
@@ -245,19 +317,21 @@ def inference_and_compare(model_file, batch_size):
 
         ## paddle predictor inference
         pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), model_params_file)
-        pdpd_predict_executor.run(test_inputs)
+        pdpd_predict_executor.run(test_inputs, warmup, repeats)
         pdpd_predict_result = pdpd_predict_executor.get_inference_results()
         print(type(pdpd_predict_result))
 
         # compare openvino result and paddle result
-        ov_result = [ov_result[k] for k in sorted(ov_result)]
-        pdpd_result = [pdpd_result[k] for k in sorted(pdpd_result)]
-        pdpd_predict_result = [pdpd_predict_result[k] for k in sorted(pdpd_predict_result)]
-        return compare(ov_result, pdpd_result) and compare(ov_result, pdpd_predict_result)
+        res = True
+        if test_mode == 'accuracy':
+            ov_result = [ov_result[k] for k in sorted(ov_result)]
+            pdpd_predict_result = [pdpd_predict_result[k] for k in sorted(pdpd_predict_result)]
+            res = compare(ov_result, pdpd_predict_result)
+        return res
     else:
         return False
 
-def loop_inference_and_compare(model_category: str, batch_size=1):
+def loop_inference_and_compare(model_category: str, test_mode: str,  batch_size=1, warmup=0, repeats=1):
     """
     循环推理和比较函数
     :param model_category: 支持的类别,detection,classify,segmentation
@@ -314,7 +388,7 @@ def loop_inference_and_compare(model_category: str, batch_size=1):
                    print('{} have no *.pdmodel or have multi files exist'.format(exported_path))
                    continue
 
-                res = inference_and_compare(models[0], batch_size)
+                res = inference_and_compare(models[0], test_mode, batch_size, warmup, repeats)
                 compare_result_list.append(PDModelInfo(row[0], row[1], models[0], "Equal" if res else 'No Equal'))
             else:
                 print('Have no this {} directory'.format(exported_path))
@@ -326,22 +400,22 @@ def loop_inference_and_compare(model_category: str, batch_size=1):
 def main():
     args = parse_args()
     if args.mode == 'all':
-        loop_inference_and_compare('classify', args.batch_size)
-        loop_inference_and_compare('detection', args.batch_size)
-        loop_inference_and_compare('segmentation', args.batch_size)
+        loop_inference_and_compare('classify', args.test_mode, args.batch_size, args.warmup, args.repeats)
+        loop_inference_and_compare('detection', args.test_mode, args.batch_size, args.warmup, args.repeats)
+        loop_inference_and_compare('segmentation', args.test_mode, args.batch_size, args.warmup, args.repeats)
     elif args.mode == 'single':
-        res = inference_and_compare(args.model_file, args.batch_size)
+        res = inference_and_compare(args.model_file, args.test_mode, args.batch_size, args.warmup, args.repeats)
         if res:
             print("Equal")
         else:
             print("Not Equal")
     elif args.mode == 'category':
         if args.category == 'classify':
-            loop_inference_and_compare('classify', args.batch_size)
+            loop_inference_and_compare('classify', args.test_mode, args.batch_size, args.warmup, args.repeats)
         elif args.category == 'detection':
-            loop_inference_and_compare('detection', args.batch_size)
+            loop_inference_and_compare('detection', args.test_mode, args.batch_size, args.warmup, args.repeats)
         elif args.category == 'segmentation':
-            loop_inference_and_compare('segmentation', args.batch_size)
+            loop_inference_and_compare('segmentation', args.test_mode, args.batch_size, args.warmup, args.repeats)
 
 
 def parse_args():
@@ -349,10 +423,13 @@ def parse_args():
     det_category_path =os.path.abspath(os.path.join(__dir__, '../exporter/paddledet'))
     clas_category_path =os.path.abspath(os.path.join(__dir__, '../exporter/paddleclas'))
     seg_category_path =os.path.abspath(os.path.join(__dir__, '../exporter/paddleseg'))
+    parser.add_argument("--test_mode", type=str, default='accuracy', choices=['accuracy', 'performance'], help="accuracy: compare paddle and openvino result after inference\nperformance: do not compare the result after inference\n(default:accuracy)")
     parser.add_argument("--mode", type=str, default='single', choices=['single', 'category', 'all'], help="single: only execute the single model_file you specify\ncategory: execute all models belong to the category you specify\nall: execute all models in all categorys\n(default:single)")
     parser.add_argument("--model_file", type=str, default=os.path.join(__dir__, '../exporter/paddleclas/MobileNetV1/inference.pdmodel'), help="model filename, only effect on single mode")
     parser.add_argument("--category", type=str, default='classify', choices=['classify', 'detection', 'segmentation'], help="classify: execute all models in {}\ndetection: execute all models in {}\nsegmentation: execute all models in {}\n(default:classify)\nonly effect on category mode".format(clas_category_path, det_category_path,  seg_category_path))
     parser.add_argument("--batch_size", type=int, default=1, help="batch size")
+    parser.add_argument("--warmup", type=int, default=0, help="warm up inference")
+    parser.add_argument("--repeats", type=int, default=1, help="repeat number of inference")
     return parser.parse_args()
 
 if __name__ == "__main__":
