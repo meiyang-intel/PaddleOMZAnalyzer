@@ -1,0 +1,17 @@
+"Faster RCNN,configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_1x_coco.pdparams",0,929.5670986175537,818.3519840240479,None,None
+"PP-Yolo v2,configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolov2_r50vd_dcn_365e_coco.pdparams",0,4694.265127182007,4373.759031295776,None,None
+"YoloV3-DarkNet53 (phase1),configs/yolov3/yolov3_darknet53_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_darknet53_270e_coco.pdparams",2,1759.1209411621094,1462.5611305236816,86.92193031311035,77.0564079284668
+"HRNet,configs/keypoint/hrnet/hrnet_w32_384x288.yml,https://paddledet.bj.bcebos.com/models/keypoint/hrnet_w32_384x288.pdparams",3,1520.1942920684814,1194.906234741211,74.94783401489258,74.11956787109375
+"YoloV4,static/configs/yolov4/yolov4_cspdarknet_voc.yml,https://paddlemodels.bj.bcebos.com/object_detection/yolov4_cspdarknet_voc.pdparams",1,None,None,None,None
+"Mask R-CNN + FPN,configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_fpn_1x_coco.pdparams",1,None,None,None,None
+"SOLO v2,configs/solov2/solov2_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/solov2_r50_fpn_1x_coco.pdparams",1,None,None,None,None
+"HigherHRNet,configs/keypoint/higherhrnet/higherhrnet_hrnet_w32_640.yml,https://paddledet.bj.bcebos.com/models/keypoint/higherhrnet_hrnet_w32_640.pdparams",1,None,None,None,None
+"Mask RCNN,configs/mask_rcnn/mask_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_1x_coco.pdparams",1,None,None,None,None
+"PP-Yolo (phase1),configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_1x_coco.pdparams",2,1977.067232131958,1622.4064826965332,1661.4603996276855,1946.1009502410889
+"Faster R-CNN + FPN,configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_fpn_1x_coco.pdparams",1,1764.0776634216309,1464.1058444976807,None,None
+"SSD-MobileNetV1,configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml,https://paddledet.bj.bcebos.com/models/ssd_mobilenet_v1_300_120e_voc.pdparams",1,None,None,None,None
+"YoloV3-ResNet50_vd,configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_r50vd_dcn_270e_coco.pdparams",2,1297.7900505065918,1160.017967224121,1604.0923595428467,1578.946590423584
+"BlazeFace,static/configs/face_detection/blazeface_keypoint.yml,https://paddlemodels.bj.bcebos.com/object_detection/blazeface_keypoint.pdparams",1,None,None,None,None
+"PP-Yolo,configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_2x_coco.pdparams",2,1872.9853630065918,1651.076316833496,1617.8267002105713,1630.8772563934326
+"PP-Yolo tiny,configs/ppyolo/ppyolo_tiny_650e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_tiny_650e_coco.pdparams",2,449.9847888946533,388.61989974975586,38.47193717956543,14.02902603149414
+"SSD-MobileNetV3,       configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams",1,None,None,None,None
