@@ -7,7 +7,7 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("--model_file", type=str, default=None, help="model filename, default(None)")
+    parser.add_argument("--model_file", type=str, default='', help="model filename, default(None)")
     parser.add_argument("--batch_size", type=int, default=1, help="batch size, default(1)")
     parser.add_argument("--warmup", type=int, default=0, help="warm up inference, default(0)")
     parser.add_argument("--repeats", type=int, default=1, help="repeat number of inference, default(1)")

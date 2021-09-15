@@ -167,9 +167,22 @@ class PaddlePredictorExecutor(Executor):
     def __init__(self, pdmodel, pdiparams):
         super().__init__(pdmodel)
         self.pdiparams = pdiparams
-        self.config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
-        self.config.enable_mkldnn()
-        self.predictor = paddle_infer.create_predictor(self.config)
+        config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
+
+        config.disable_gpu()
+        config.set_cpu_math_library_num_threads(6)
+        # cache 10 different shapes for mkldnn to avoid memory leak
+        config.set_mkldnn_cache_capacity(10)
+        config.enable_mkldnn()
+
+        # # enable memory optim
+        config.enable_memory_optim()
+        config.disable_glog_info()
+
+        config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
+        config.switch_use_feed_fetch_ops(False)
+
+        self.predictor = paddle_infer.create_predictor(config)
 
     def inference(self, inputs:dict, warmup=0, repeats=1):
         input_names = self.predictor.get_input_names()
@@ -354,10 +367,12 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
             result_level = 3
 
     finally:
+        timestamps = [paddle_warmup_frame_time, paddle_repeats_per_frame_time, openvino_warmup_frame_time, openvino_repeats_per_frame_time]
+        timestamps = ["{:.2f}".format(t) if t is not None else 'FAILED' for t in timestamps]
         # write append to result_save_file
         with open(result_save_file, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow([result_prefix_str, result_level, paddle_warmup_frame_time, paddle_repeats_per_frame_time, openvino_warmup_frame_time, openvino_repeats_per_frame_time])
+            writer.writerow([result_prefix_str, result_level] + timestamps)
 
 def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0, repeats=1, openvino_api_type: str = 'sync'):
     try:
@@ -367,7 +382,7 @@ def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0
         openvino_repeats_per_frame_time = 'None'
         status = 0
         if not os.path.exists(model_file):
-            print('Have no this {} file.'.format(model_file))
+            print('model file "{}" not exists. Please specify it with --model_file argument.'.format(model_file))
             return
 
         # create test data
@@ -384,16 +399,15 @@ def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0
         pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), str(model_params_file))
         pdpd_predict_executor.run(test_inputs, warmup, repeats)
         pdpd_predict_result = pdpd_predict_executor.get_inference_results()
-        paddle_warmup_frame_time = pdpd_predict_executor.warmup_time
-        paddle_repeats_per_frame_time = pdpd_predict_executor.repeat_time
-        status = 1
+        paddle_warmup_frame_time = "{:.2f}".format(pdpd_predict_executor.warmup_time) if pdpd_predict_executor.warmup_time is not None else 'None'
+        paddle_repeats_per_frame_time = "{:.2f}".format(pdpd_predict_executor.repeat_time) if pdpd_predict_executor.repeat_time is not None else 'None'
 
         ## openvino inference
         ov_executor = OpenvinoExecutor(model_file, 10, openvino_api_type)
         ov_executor.run(test_inputs, warmup, repeats)
         ov_result = ov_executor.get_inference_results()
-        openvino_warmup_frame_time = ov_executor.warmup_time
-        openvino_repeats_per_frame_time = ov_executor.repeat_time
+        openvino_warmup_frame_time = "{:.2f}".format(ov_executor.warmup_time) if ov_executor.warmup_time is not None else 'None'
+        openvino_repeats_per_frame_time = "{:.2f}".format(ov_executor.repeat_time) if ov_executor.repeat_time is not None else 'None'
         status = 2
 
         # compare
