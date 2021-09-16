@@ -331,10 +331,10 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
     '''
     # ResultInfo=namedtuple('ResultInfo', 'result_prefix_str result_level paddle_first_frame_time paddle_repeats_per_frame_time openvino_first_frame_time openvino_repeats_per_frame_time')
     try:
-        paddle_warmup_frame_time = 'None'
-        paddle_repeats_per_frame_time = 'None'
-        openvino_warmup_frame_time = 'None'
-        openvino_repeats_per_frame_time = 'None'
+        paddle_warmup_frame_time = None
+        paddle_repeats_per_frame_time = None
+        openvino_warmup_frame_time = None
+        openvino_repeats_per_frame_time = None
         # No file or multi file
         if model_file == None or model_params_file == None:
             return
@@ -368,7 +368,8 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
 
     finally:
         timestamps = [paddle_warmup_frame_time, paddle_repeats_per_frame_time, openvino_warmup_frame_time, openvino_repeats_per_frame_time]
-        timestamps = ["{:.2f}".format(t) if t is not None else 'FAILED' for t in timestamps]
+        print(timestamps)
+        timestamps = ["{:.2f}".format(t) if t is not None else 'NONE' for t in timestamps]
         # write append to result_save_file
         with open(result_save_file, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
@@ -376,10 +377,10 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
 
 def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0, repeats=1, openvino_api_type: str = 'sync'):
     try:
-        paddle_warmup_frame_time = 'None'
-        paddle_repeats_per_frame_time = 'None'
-        openvino_warmup_frame_time = 'None'
-        openvino_repeats_per_frame_time = 'None'
+        paddle_warmup_frame_time = None
+        paddle_repeats_per_frame_time = None
+        openvino_warmup_frame_time = None
+        openvino_repeats_per_frame_time = None
         status = 0
         if not os.path.exists(model_file):
             print('model file "{}" not exists. Please specify it with --model_file argument.'.format(model_file))
