@@ -353,6 +353,9 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
         paddle_warmup_frame_time = pdpd_predict_executor.warmup_time
         paddle_repeats_per_frame_time = pdpd_predict_executor.repeat_time
 
+        if result_level<=0:
+            return
+
         ## openvino inference
         ov_executor = OpenvinoExecutor(model_file, 10, openvino_api_type)
         ov_executor.run(test_inputs, warmup, repeats)
