@@ -330,6 +330,9 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
     writefile row: 'result_prefix_str result_level paddle_warmup_frame_time paddle_repeats_per_frame_time openvino_warmup_frame_time openvino_repeats_per_frame_time'
     '''
     # ResultInfo=namedtuple('ResultInfo', 'result_prefix_str result_level paddle_first_frame_time paddle_repeats_per_frame_time openvino_first_frame_time openvino_repeats_per_frame_time')
+    result_level_dict = dict(zip(range(0,4),
+                                ['op mapper failed', 'all ops mapped', 'openvino infered success', 'infer accuracy pass']))
+
     try:
         paddle_warmup_frame_time = None
         paddle_repeats_per_frame_time = None
@@ -373,7 +376,7 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
         # write append to result_save_file
         with open(result_save_file, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow([result_prefix_str, result_level] + timestamps)
+            writer.writerow([result_prefix_str, result_level_dict[result_level]] + timestamps)
 
 def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0, repeats=1, openvino_api_type: str = 'sync'):
     try:
