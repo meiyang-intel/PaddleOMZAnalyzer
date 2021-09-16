@@ -17,14 +17,12 @@ def create_params_list_by_csv_file(csv_file, model_category_path, result_save_fi
     if os.path.exists(result_save_file):
         os.remove(result_save_file)
 
-    result_level = 0
     result_prefix_str = str('')
     # loop get params_list
     with open(csv_file, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
-            if row[-1] == 'None':
-                result_level = 1
+            result_level = 1 if row[-1] == 'None' else 0  # based on anaylyzer report
             result_prefix_str = row[0] + ',' + row[1] + ',' + row[2]
             config_yaml = row[1]
             config_yaml = ''.join(config_yaml.split()) # remove all whitespace
