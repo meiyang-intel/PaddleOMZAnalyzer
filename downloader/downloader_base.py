@@ -115,7 +115,7 @@ class base_downloader(object):
                     for track in tracks_pdparams:
                         pdparams_url = '{}'.format(track['href'])
                         self.all_pdparams_urls[pdparams_url] = md_file
-                        logging.debug('{}, {}'.format(pdparams_url, md_file))
+                        # logging.debug('{}, {}'.format(pdparams_url, md_file))
 
         return self.all_pdparams_urls
 

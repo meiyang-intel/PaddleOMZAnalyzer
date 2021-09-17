@@ -121,20 +121,34 @@ class paddleclas_downloader(base_downloader):
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--project_dir", type=str, default='../../PaddleClas', help="PaddleClas project directory")
-    parser.add_argument("--filter_data_file", type=str, default='../data/paddleclas.csv', help="The file we used to filter the model link")
+
+    default_project_dir =os.path.abspath(os.path.join(__dir__, '../../PaddleClas'))
+    default_filter_data_file =os.path.abspath(os.path.join(__dir__, '../data/paddleclas.csv'))
+    default_models_download_path =os.path.abspath(os.path.join(__dir__, './paddleclas'))
+    default_full_model_info_save_file =os.path.abspath(os.path.join(__dir__, './paddleclas_full.csv'))
+    default_filtered_model_info_save_file =os.path.abspath(os.path.join(__dir__, './paddleclas_filtered.csv'))
+
+    parser.add_argument("--project_dir", type=str, default=str(default_project_dir), help="PaddleClas project directory")
+    parser.add_argument("--filter_data_file", type=str, default=str(default_filter_data_file), help="The file we used to filter the model link")
     parser.add_argument("--download_mode", type=str, default='None', choices=['all', 'filtered', 'None'], help="Download mode, all: download all models, filtered: only download the filtered models, None: download nothing")
-    parser.add_argument("--models_download_path", type=str, default='./paddleclas', help="where to store the downloaded models")
-    parser.add_argument("--full_model_info_save_file", type=str, default='./paddleclas_full.csv', help="The file to save the full model link info")
-    parser.add_argument("--filtered_model_info_save_file", type=str, default='./paddleclas_filtered.csv', help="The file to save the filtered model link info")
+    parser.add_argument("--models_download_path", type=str, default=str(default_models_download_path), help="where to store the downloaded models")
+    parser.add_argument("--full_model_info_save_file", type=str, default=str(default_full_model_info_save_file), help="The file to save the full model link info")
+    parser.add_argument("--filtered_model_info_save_file", type=str, default=str(default_filtered_model_info_save_file), help="The file to save the filtered model link info")
+
     return parser.parse_args()
 
 def convert_params_to_abspath(args):
-    args.project_dir = os.path.abspath(args.project_dir)
-    args.filter_data_file = os.path.abspath(args.filter_data_file)
-    args.models_download_path = os.path.abspath(args.models_download_path)
-    args.full_model_info_save_file = os.path.abspath(args.full_model_info_save_file)
-    args.filtered_model_info_save_file = os.path.abspath(args.filtered_model_info_save_file)
+    cwd = os.getcwd()
+    if not os.path.isabs(args.project_dir):
+        args.project_dir = os.path.abspath(os.path.join(cwd, args.project_dir))
+    if not os.path.isabs(args.filter_data_file):
+        args.filter_data_file = os.path.abspath(os.path.join(cwd, args.filter_data_file))
+    if not os.path.isabs(args.models_download_path):
+        args.models_download_path = os.path.abspath(os.path.join(cwd, args.models_download_path))
+    if not os.path.isabs(args.full_model_info_save_file):
+        args.full_model_info_save_file = os.path.abspath(os.path.join(cwd, args.full_model_info_save_file))
+    if not os.path.isabs(args.filtered_model_info_save_file):
+        args.filtered_model_info_save_file = os.path.abspath(os.path.join(cwd, args.filtered_model_info_save_file))
 
 def welcome_info(args):
     logging.info("paddle classification models downloader begin.")
