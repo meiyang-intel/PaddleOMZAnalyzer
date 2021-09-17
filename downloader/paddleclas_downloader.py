@@ -1,60 +1,159 @@
-import re
-import csv
+import argparse
 import os
 import sys
+import re
+import logging
+import csv
+from pathlib import Path
+from bs4 import BeautifulSoup
+import markdown
+import requests
 
-from common import PDModelInfo
-from downloader_helper import download_pdparams, scrape_pdparams
+from downloader_base import PDFiltedModelInfo, PDAllModelInfo, base_downloader
 
-if __name__ == '__main__':
-    __dir__ = os.path.dirname(os.path.abspath(__file__))
+__dir__ = os.path.dirname(os.path.abspath(__file__))
 
-    # scrapy linker of *.pdparams
-    tracks = scrape_pdparams('https://github.com/PaddlePaddle/PaddleClas/blob/release/2.2/docs/zh_CN/models/models_intro.md')
+class paddleclas_downloader(base_downloader):
+    def __init__(self, project_dir, filter_data_file, download_mode, models_download_path, full_model_info_save_file, filtered_model_info_save_file):
+        super().__init__(project_dir, filter_data_file, download_mode, models_download_path, full_model_info_save_file, filtered_model_info_save_file)
+        self.sum_yml_and_yaml_list = []
 
-    # collect model info of OMZ, cache to csv
-    models = []
-    with open('../data/paddleclas.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-        for row in reader:
-            config_yaml = row[1]
-            config_yaml = ''.join(config_yaml.split()) # remove all whitespace
-            config_base = os.path.basename(config_yaml)
+    def merge_yml_list_and_yaml_list(self):
+        """
+        merge the self.all_yaml_file_list and the self.all_yml_file_list
+        to one self.sum_yml_and_yaml_list
+        """
+        if len(self.sum_yml_and_yaml_list) > 0:
+            return self.sum_yml_and_yaml_list
+
+        for yaml_file in self.all_yaml_file_list:
+            self.sum_yml_and_yaml_list.append(yaml_file)
+
+        for temp_file_name in self.all_yml_file_list:
+            self.sum_yml_and_yaml_list.append(temp_file_name)
+
+        return self.sum_yml_and_yaml_list
+
+    def get_all_model_info_list(self):
+        """
+        match self.all_yml_file_list and self.all_yaml_file_list with self.all_pdparams_urls,
+        then get the self.all_model_info_list
+        """
+        if len(self.all_model_info_list) > 0:
+            return self.all_model_info_list
+
+        self.merge_yml_list_and_yaml_list()
+
+        for temp_file_name in self.sum_yml_and_yaml_list:
+            config_base = os.path.basename(temp_file_name)
             config_base = os.path.splitext(config_base)[0]
-            pdprams_url = ''
+            pattern = re.compile(r".*/%s_pretrained.pdparams" %config_base)
+            match_url_list = []
+            for key in self.all_pdparams_urls:
+                pdparams_url = str(key)
+                md_filename_path = self.all_pdparams_urls[key]
+                if pattern.match(pdparams_url):
+                    match_url_list.append([md_filename_path, pdparams_url])
 
-            # find the best matcher which is highly possible to be the correct pdparams.
-            for track in tracks:
-                # search title for the first chance
-                track_title = track.text.strip().replace('/', '-')
-                if re.match(config_base+'$', track_title):
-                    pdprams_url = '{}'.format(track['href'])
-                    #print(config_yaml, track_title, pdprams_url)
-                    break
-            
-            if not pdprams_url:
-                # search title for second chance
-                for track in tracks:
-                    track_url = '{}'.format(track['href'])
-                    #print(config_base, track_url)
-                    if re.search(config_base, track_url):
-                        pdprams_url = '{}'.format(track['href'])
-                        break
-            
-            # if still fail, throw exception to check scrapy rules.
-            if not pdprams_url:
-                print('failed to get pdparams for {} {}'.format(row[0], config_yaml))                             
+            if len(match_url_list) >0:
+                self.all_model_info_list.append(PDAllModelInfo(str(match_url_list[0][0]), str(temp_file_name), str(match_url_list[0][1])))
+            else:
+                self.all_model_info_list.append(PDAllModelInfo('None', str(temp_file_name), 'None'))
 
-            models.append(PDModelInfo(row[0], config_yaml, pdprams_url))
+        return self.all_model_info_list
 
-    with open('paddleclas_full.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerows(models)
+    def get_filted_model_info_list(self):
+        """
+        use self.filter_data_file info to filter the self.all_model_info_list,
+        then get the self.filted_model_info_list
+        """
+        if len(self.filted_model_info_list) > 0:
+            return self.filted_model_info_list
 
-    # download
-    if len(sys.argv) > 1:
-        for m in models:
-            abspath = os.path.abspath(__file__)
-            dirs, _ = os.path.split(abspath)
-            download_pdparams(m.pdparams, f'{dirs}/paddleclas')
+        with open(self.filter_data_file, newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+            for row in reader:
+                config_yaml = row[1]
+                config_yaml = ''.join(config_yaml.split()) # remove all whitespace
+                config_base = os.path.basename(config_yaml)
+                model_type = row[0]
+                model_type = ''.join(model_type.split()) # remove all whitespace
+                pattern = re.compile(r".*%s" %str(config_base))
+                match_url_list = []
+                for item in self.all_model_info_list:
+                    if pattern.match(str(item.pdconfig)):
+                        match_url_list.append([item.pdconfig, item.pdparams])
 
+                if len(match_url_list) >0:
+                    self.filted_model_info_list.append(PDFiltedModelInfo(str(model_type), str(config_yaml), str(match_url_list[0][1])))
+                else:
+                    self.filted_model_info_list.append(PDFiltedModelInfo(str(model_type), str(config_yaml), 'None'))
+
+        return self.filted_model_info_list
+
+    def download_models(self):
+        """
+        download models to models_download_path according to the self.download_mode.
+        """
+        if self.download_mode == 'None':
+            return True
+        elif self.download_mode == 'all':
+            for item in self.all_model_info_list:
+                if item.pdparams == 'None':
+                    continue
+                config_base = os.path.basename(item.pdconfig)
+                config_base = os.path.splitext(config_base)[0]
+                file_name = config_base + '_pretrained.pdparams'
+                self.download_pdparams_file(file_name, item.pdparams, self.models_download_path)
+        elif self.download_mode == 'filtered':
+            for item in self.filted_model_info_list:
+                if item.pdparams == 'None':
+                    continue
+                config_base = os.path.basename(item.pdconfig)
+                config_base = os.path.splitext(config_base)[0]
+                file_name = config_base + '_pretrained.pdparams'
+                self.download_pdparams_file(file_name, item.pdparams, self.models_download_path)
+        else:
+            return False
+
+        return True
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--project_dir", type=str, default='../../PaddleClas', help="PaddleClas project directory")
+    parser.add_argument("--filter_data_file", type=str, default='../data/paddleclas.csv', help="The file we used to filter the model link")
+    parser.add_argument("--download_mode", type=str, default='None', choices=['all', 'filtered', 'None'], help="Download mode, all: download all models, filtered: only download the filtered models, None: download nothing")
+    parser.add_argument("--models_download_path", type=str, default='./paddleclas', help="where to store the downloaded models")
+    parser.add_argument("--full_model_info_save_file", type=str, default='./paddleclas_full.csv', help="The file to save the full model link info")
+    parser.add_argument("--filtered_model_info_save_file", type=str, default='./paddleclas_filtered.csv', help="The file to save the filtered model link info")
+    return parser.parse_args()
+
+def convert_params_to_abspath(args):
+    args.project_dir = os.path.abspath(args.project_dir)
+    args.filter_data_file = os.path.abspath(args.filter_data_file)
+    args.models_download_path = os.path.abspath(args.models_download_path)
+    args.full_model_info_save_file = os.path.abspath(args.full_model_info_save_file)
+    args.filtered_model_info_save_file = os.path.abspath(args.filtered_model_info_save_file)
+
+def welcome_info(args):
+    logging.info("paddle classification models downloader begin.")
+    logging.debug("args.project_dir: {}".format(args.project_dir))
+    logging.debug("args.filter_data_file: {}".format(args.filter_data_file))
+    logging.debug("args.download_mode: {}".format(args.download_mode))
+    logging.debug("args.models_download_path: {}".format(args.models_download_path))
+    logging.debug("args.full_model_info_save_file: {}".format(args.full_model_info_save_file))
+    logging.debug("args.filtered_model_info_save_file: {}".format(args.filtered_model_info_save_file))
+
+def main():
+    #logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.INFO)
+    args = parse_args()
+    convert_params_to_abspath(args)
+    welcome_info(args)
+    downloader = paddleclas_downloader(args.project_dir, args.filter_data_file, args.download_mode, args.models_download_path, args.full_model_info_save_file, args.filtered_model_info_save_file)
+    downloader.run()
+
+if __name__ == "__main__":
+    main()
+    logging.info("paddle classification models downloader done.")
