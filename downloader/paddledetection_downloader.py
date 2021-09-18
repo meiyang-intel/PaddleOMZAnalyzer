@@ -1,144 +1,171 @@
-# git clone https://github.com/PaddlePaddle/PaddleDetection
-# iterately go through each markdown file to 
-# - grab model config yaml and model pretrained pdparams file info from md file.
-# - grab all yml file
-# - then match pdparams to yml file
-
+import argparse
 import os
 import sys
-import argparse
-
-__dir__ = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(__dir__)
-sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
-
 import re
+import logging
 import csv
 from pathlib import Path
 from bs4 import BeautifulSoup
 import markdown
+import requests
 
-from common import PDModelInfo
+from downloader_base import PDFiltedModelInfo, PDAllModelInfo, base_downloader
 
-class PaddleDetScraper(object):
-    def __init__(self, homepage):
-        self.homepage = homepage
+__dir__ = os.path.dirname(os.path.abspath(__file__))
 
-    def __call__(self):
-        paths = Path(self.homepage).glob('**/*.md')
-        #print(len(list(paths))) # NOTE: in-place list op
+class paddledet_downloader(base_downloader):
+    def __init__(self, project_dir, filter_data_file, download_mode, models_download_path, full_model_info_save_file, filtered_model_info_save_file):
+        super().__init__(project_dir, filter_data_file, download_mode, models_download_path, full_model_info_save_file, filtered_model_info_save_file)
+        self.sum_yml_and_yaml_list = []
 
-        all_md_urls = set(()) # use set instead of list to avoid duplicate item
-        count_pdparams = 0
-        for path in paths:
-            # TODO: will slim in another way
-            if str(path.parent)==os.path.join(self.homepage, 'configs/slim'):
-                continue
-            
-            with open(path, 'r') as f:
-                text = f.read()
-                html_text = markdown.markdown(text)
+    def merge_yml_list_and_yaml_list(self):
+        """
+        merge the self.all_yaml_file_list and the self.all_yml_file_list
+        to one self.sum_yml_and_yaml_list
+        """
+        if len(self.sum_yml_and_yaml_list) > 0:
+            return self.sum_yml_and_yaml_list
 
-                soup = BeautifulSoup(html_text, 'html.parser')
+        for yaml_file in self.all_yaml_file_list:
+            self.sum_yml_and_yaml_list.append(yaml_file)
 
-                tracks_pdparams = soup.find_all('a', attrs={'href': re.compile(r'\.pdparams$')}, string=re.compile(r'^((?!\().)*$'))            
+        for temp_file_name in self.all_yml_file_list:
+            self.sum_yml_and_yaml_list.append(temp_file_name)
 
-                if len(list(tracks_pdparams))>0:
-                    # debugging
-                    # tracks_ymls = soup.find_all('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$')) # either yml or yaml   
-                    # print(path, len(list(tracks_pdparams)), len(tracks_ymls))
-                    count_pdparams += len(list(tracks_pdparams))
+        return self.sum_yml_and_yaml_list
 
-                    for track in tracks_pdparams:
-                        track_config = track.findNext('a', attrs={'href': re.compile(r'\.yml$|\.yaml$')}, string=re.compile(r'^((?!\().)*$'))
-                        if track_config is None:
-                            continue # ignore
+    def get_all_model_info_list(self):
+        """
+        match self.all_yml_file_list and self.all_yaml_file_list with self.all_pdparams_urls,
+        then get the self.all_model_info_list
+        """
+        if len(self.all_model_info_list) > 0:
+            return self.all_model_info_list
 
-                        configs_url = '{}'.format(track_config['href'])
-                        pdparams_url = '{}'.format(track['href'])
-                        all_md_urls.add((path, configs_url, pdparams_url))
-        print(len(all_md_urls), count_pdparams)
-        return all_md_urls
+        self.merge_yml_list_and_yaml_list()
 
-class PaddleDetFilter(object):
-    def __init__(self, filter):
-        self.filter = filter
+        for temp_file_name in self.sum_yml_and_yaml_list:
+            config_base = os.path.basename(temp_file_name)
+            config_base = os.path.splitext(config_base)[0]
+            pattern = re.compile(r".*/%s.pdparams" %config_base)
+            match_url_list = []
+            for key in self.all_pdparams_urls:
+                pdparams_url = str(key)
+                md_filename_path = self.all_pdparams_urls[key]
+                if pattern.match(pdparams_url):
+                    match_url_list.append([md_filename_path, pdparams_url])
 
-    def __call__(self, all_md_urls, downdload=False):
-        # collect model info of OMZ, cache to csv
-        models = set(()) # use set instead of list to avoid duplicate item
-        with open(self.filter, newline='') as csvfile:
+            if len(match_url_list) >0:
+                self.all_model_info_list.append(PDAllModelInfo(str(match_url_list[0][0]), str(temp_file_name), str(match_url_list[0][1])))
+            else:
+                self.all_model_info_list.append(PDAllModelInfo('None', str(temp_file_name), 'None'))
+
+        return self.all_model_info_list
+
+    def get_filted_model_info_list(self):
+        """
+        use self.filter_data_file info to filter the self.all_model_info_list,
+        then get the self.filted_model_info_list
+        """
+        if len(self.filted_model_info_list) > 0:
+            return self.filted_model_info_list
+        pass
+
+        with open(self.filter_data_file, newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             for row in reader:
-                config_yaml = row[1] # configs/.../*.yml
-                config_yaml = ''.join(config_yaml.split()) # remove all whitespace'
-                print(config_yaml)
+                config_yaml = row[1]
+                config_yaml = ''.join(config_yaml.split()) # remove all whitespace
+                model_type = row[0]
+                pattern = re.compile(r".*%s" %str(config_yaml))
+                match_url_list = []
+                for item in self.all_model_info_list:
+                    if pattern.match(str(item.pdconfig)):
+                        match_url_list.append([item.pdconfig, item.pdparams])
 
-                cur_pdprams_url = ''
+                if len(match_url_list) >0:
+                    self.filted_model_info_list.append(PDFiltedModelInfo(str(model_type), str(config_yaml), str(match_url_list[0][1])))
+                else:
+                    self.filted_model_info_list.append(PDFiltedModelInfo(str(model_type), str(config_yaml), 'None'))
 
-                # find the best matcher which is highly possible to be the correct config yml.
-                for (_, config_url, pdprams_url) in all_md_urls:
-                      if re.search(config_yaml+'$', config_url):
-                        cur_pdprams_url = pdprams_url
-                        models.add(PDModelInfo(row[0], config_yaml, cur_pdprams_url)) # possible more than one pdparams matches config yml , e.g. slim
-                
-                # second chance, to match basename only
-                if not cur_pdprams_url:
-                    config_base = os.path.basename(config_yaml)             
-                    for (_, config_url, pdprams_url) in all_md_urls:
-                        # print(config_yaml, config_url, re.match(config_yaml, config_url))
-                        if re.search(config_base, config_url):
-                            cur_pdprams_url = pdprams_url
-                            models.add(PDModelInfo(row[0], config_yaml, cur_pdprams_url))            
-               
-                # if still fail, throw exception to check scrapy rules.
-                if not cur_pdprams_url:
-                    print('failed to get pdparams for {}, {}'.format(row[0], config_yaml))
-                    continue        
-        return models
-        
-def main(args):
-    # scraper
-    det_scaper = PaddleDetScraper(homepage=os.path.abspath(os.path.join(__dir__, '../../PaddleDetection')))   
-    all_md_urls = det_scaper()
-    with open('paddledet_full.csv', 'w', newline='') as csvfile: # cache urls for debugging
-        headerList = ['markdown_file', 'pdconfig_url', 'pdparams_url']
-        dw = csv.DictWriter(csvfile, delimiter=',', 
-                            fieldnames=headerList)
-        dw.writeheader()        
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerows(all_md_urls)
+        return self.filted_model_info_list
 
-    # filter
-    det_filter = PaddleDetFilter('../data/paddledet.csv')
-    models = det_filter(all_md_urls)
-    with open('paddledet_filtered.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerows(models)   
+    def download_models(self):
+        """
+        download models to models_download_path according to the self.download_mode.
+        """
+        if self.download_mode == 'None':
+            return True
+        elif self.download_mode == 'all':
+            for item in self.all_model_info_list:
+                if item.pdparams == 'None':
+                    continue
+                config_base = os.path.basename(item.pdconfig)
+                config_base = os.path.splitext(config_base)[0]
+                file_name = config_base + '.pdparams'
+                self.download_pdparams_file(file_name, item.pdparams, self.models_download_path)
+        elif self.download_mode == 'filtered':
+            for item in self.filted_model_info_list:
+                if item.pdparams == 'None':
+                    continue
+                config_base = os.path.basename(item.pdconfig)
+                config_base = os.path.splitext(config_base)[0]
+                file_name = config_base + '.pdparams'
+                self.download_pdparams_file(file_name, item.pdparams, self.models_download_path)
+        else:
+            return False
+        return True
+
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    # params for text detector
-    parser.add_argument("--homepage", type=str)
-    parser.add_argument("--det_algorithm", type=str, default='DB')
-    parser.add_argument("--det_model_dir", type=str)
-    parser.add_argument("--det_limit_side_len", type=float, default=960)
-    parser.add_argument("--det_limit_type", type=str, default='max')  
+    default_project_dir =os.path.abspath(os.path.join(__dir__, '../../PaddleDetection'))
+    default_filter_data_file =os.path.abspath(os.path.join(__dir__, '../data/paddledet.csv'))
+    default_models_download_path =os.path.abspath(os.path.join(__dir__, './paddledet'))
+    default_full_model_info_save_file =os.path.abspath(os.path.join(__dir__, './paddledet_full.csv'))
+    default_filtered_model_info_save_file =os.path.abspath(os.path.join(__dir__, './paddledet_filtered.csv'))
+
+    parser.add_argument("--project_dir", type=str, default=str(default_project_dir), help="PaddleDetection project directory")
+    parser.add_argument("--filter_data_file", type=str, default=str(default_filter_data_file), help="The file we used to filter the model link")
+    parser.add_argument("--download_mode", type=str, default='None', choices=['all', 'filtered', 'None'], help="Download mode, all: download all models, filtered: only download the filtered models, None: download nothing")
+    parser.add_argument("--models_download_path", type=str, default=str(default_models_download_path), help="where to store the downloaded models")
+    parser.add_argument("--full_model_info_save_file", type=str, default=str(default_full_model_info_save_file), help="The file to save the full model link info")
+    parser.add_argument("--filtered_model_info_save_file", type=str, default=str(default_filtered_model_info_save_file), help="The file to save the filtered model link info")
 
     return parser.parse_args()
 
+def convert_params_to_abspath(args):
+    cwd = os.getcwd()
+    if not os.path.isabs(args.project_dir):
+        args.project_dir = os.path.abspath(os.path.join(cwd, args.project_dir))
+    if not os.path.isabs(args.filter_data_file):
+        args.filter_data_file = os.path.abspath(os.path.join(cwd, args.filter_data_file))
+    if not os.path.isabs(args.models_download_path):
+        args.models_download_path = os.path.abspath(os.path.join(cwd, args.models_download_path))
+    if not os.path.isabs(args.full_model_info_save_file):
+        args.full_model_info_save_file = os.path.abspath(os.path.join(cwd, args.full_model_info_save_file))
+    if not os.path.isabs(args.filtered_model_info_save_file):
+        args.filtered_model_info_save_file = os.path.abspath(os.path.join(cwd, args.filtered_model_info_save_file))
+
+def welcome_info(args):
+    logging.info("paddle detection models downloader begin.")
+    logging.debug("args.project_dir: {}".format(args.project_dir))
+    logging.debug("args.filter_data_file: {}".format(args.filter_data_file))
+    logging.debug("args.download_mode: {}".format(args.download_mode))
+    logging.debug("args.models_download_path: {}".format(args.models_download_path))
+    logging.debug("args.full_model_info_save_file: {}".format(args.full_model_info_save_file))
+    logging.debug("args.filtered_model_info_save_file: {}".format(args.filtered_model_info_save_file))
+
+def main():
+    #logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.INFO)
+    args = parse_args()
+    convert_params_to_abspath(args)
+    welcome_info(args)
+    downloader = paddledet_downloader(args.project_dir, args.filter_data_file, args.download_mode, args.models_download_path, args.full_model_info_save_file, args.filtered_model_info_save_file)
+    downloader.run()
+
 if __name__ == "__main__":
-    import pandas
-
-    args = parse_args()    
-    main(args) 
-
-    # display
-    print(pandas.read_csv('paddledet_filtered.csv'))
-'''
-failed to get pdparams for YoloV3-DarkNet53, configs/yolov3/yolov3_darknet53_270e_voc.yml
-failed to get pdparams for YoloV4, static/configs/yolov4/yolov4_cspdarknet_coco.yml
-failed to get pdparams for SSD-MobileNetV3, configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml
-failed to get pdparams for PP-Yolo v2, configs/ppyolo/ppyolov2_r50vd_dcn_voc.yml
-'''
+    main()
+    logging.info("paddle detection models downloader done.")
