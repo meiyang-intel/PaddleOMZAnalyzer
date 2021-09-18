@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument("--config_file", type=str, default=default_config_file, help="The file we used to specify models need to export")
     parser.add_argument("--dynamic_models_path", type=str, default=default_dynamic_models_path, help="where to find the dynamic models")
     parser.add_argument("--static_models_save_path", type=str, default=default_static_models_save_path, help="where to save the static models we exported")
+    parser.add_argument("--subprocess_max_number", type=int, default=5, help="subprocess max number which used to limit the process number to prevent it consumes all cpu/memory resources")
 
     return parser.parse_args()
 
@@ -48,6 +49,7 @@ def welcome_info(args):
     logging.debug("args.config_file: {}".format(args.config_file))
     logging.debug("args.dynamic_models_path: {}".format(args.dynamic_models_path))
     logging.debug("args.static_models_save_path: {}".format(args.static_models_save_path))
+    logging.debug("args.subprocess_max_number: {}".format(args.subprocess_max_number))
 
 
 def main():
@@ -61,7 +63,7 @@ def main():
     os.chdir(args.project_dir)
 
     pipes = []
-
+    sum_exit_codes = []
     with open(args.config_file, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
@@ -82,9 +84,16 @@ def main():
             logging.info('exporter_cmd: {}'.format(exporter_cmd))
             p = subprocess.Popen(exporter_cmd, shell=True)
             pipes.append(p)
+            if len(pipes) == args.subprocess_max_number:
+                exit_codes = [p.wait() for p in pipes]
+                sum_exit_codes = sum_exit_codes + exit_codes
+                pipes.clear()
 
-    exit_codes = [p.wait() for p in pipes]
-    logging.info('exit_codes: {}'.format(exit_codes))
+        if len(pipes) != 0:
+            exit_codes = [p.wait() for p in pipes]
+            sum_exit_codes = sum_exit_codes + exit_codes
+
+    logging.info('exit_codes: {}'.format(sum_exit_codes))
 
 if __name__ == '__main__':
     main()
