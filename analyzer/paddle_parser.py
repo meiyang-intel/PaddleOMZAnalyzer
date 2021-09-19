@@ -23,7 +23,7 @@ def append_fetch_ops(program, fetch_target_names, fetch_holder_name='fetch'):
             inputs={'X': [name]},
             outputs={'Out': [fetch_var]},
             attrs={'col': i})
-        
+
 def insert_fetch(program, fetchs, fetch_holder_name="fetch"):
     global_block = program.global_block()
     need_to_remove_op_index = list()
@@ -49,21 +49,23 @@ def get_ops(paddelmodel_dir):
     for path in scattered:
         models.append(path)
         print(path)
-    
-    assert(len(models)==1)
-    pdmodel_path = Path(models[0])    
+
+    if len(models) != 1:
+        return 'ERROR'
+
+    pdmodel_path = Path(models[0])
 
     # 加载模型
     exe = fluid.Executor(fluid.CPUPlace())
     if pdmodel_path.suffix=='.pdmodel':
         pdmodel_prefix = os.path.join(pdmodel_path.parent, pdmodel_path.stem)
         [prog, feed, fetchs] = paddle.static.load_inference_model(
-                            pdmodel_prefix, 
+                            pdmodel_prefix,
                             exe)
     else:
         [prog, feed, fetchs] = paddle.static.load_inference_model(
-                    str(pdmodel_path.parent), 
-                    exe, model_filename='__model__', params_filename='__params__') 
+                    str(pdmodel_path.parent),
+                    exe, model_filename='__model__', params_filename='__params__')
 
     operator_set = set(())
     # 输出计算图所有结点信息
@@ -88,4 +90,4 @@ if __name__ == '__main__':
     test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddledet/blazeface_keypoint'))
     operator_set = get_ops(test_model)
 
-    print(operator_set, len(operator_set))    
+    print(operator_set, len(operator_set))

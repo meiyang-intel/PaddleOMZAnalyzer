@@ -68,6 +68,10 @@ def main():
 
             if os.path.exists(exported_path):
                 operator_set = get_ops(exported_path)
+                if operator_set is 'ERROR':
+                    models.append(PDModelInfo(row[0], row[1], row[2], 'ERROR', 'ERROR'))
+                    continue
+
                 logging.debug(config_base, operator_set, len(operator_set))
                 # pick out unsupported operators
                 unsupported_ops = []
