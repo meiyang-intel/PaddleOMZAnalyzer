@@ -1,0 +1,5 @@
+"BiSeNetv2（速度最快）,configs/bisenet/bisenet_cityscapes_1024x1024_160k.yml,https://bj.bcebos.com/paddleseg/dygraph/cityscapes/bisenet_cityscapes_1024x1024_160k/model.pdparams",openvino infered success,56.87,18.27,33.75,7.10
+"DeepLabV3+（常用）,configs/deeplabv3p/deeplabv3p_resnet50_os8_cityscapes_1024x512_80k.yml,https://bj.bcebos.com/paddleseg/dygraph/cityscapes/deeplabv3p_resnet50_os8_cityscapes_1024x512_80k/model.pdparams",openvino infered success,773.15,597.38,115.59,103.67
+"OCRNet（精度最高),configs/ocrnet/ocrnet_hrnetw48_cityscapes_1024x512_160k.yml,https://bj.bcebos.com/paddleseg/dygraph/cityscapes/ocrnet_hrnetw48_cityscapes_1024x512_160k/model.pdparams",infer accuracy pass,1017.36,745.88,161.07,140.15
+"PPSeg(可直接用于人像分割推理),contrib/HumanSeg/configs/fcn_hrnetw18_small_v1_humanseg_192x192_mini_supervisely.yml,https://paddleseg.bj.bcebos.com/dygraph/humanseg/export/fcn_hrnetw18_small_v1_humanseg_192x192_with_softmax.zip",openvino infered success,55.51,20.05,6.36,5.92
+"U-Net（常用）,configs/unet/unet_cityscapes_1024x512_160k.yml,https://bj.bcebos.com/paddleseg/dygraph/cityscapes/unet_cityscapes_1024x512_160k/model.pdparams",infer accuracy pass,121.95,84.70,43.86,18.67
