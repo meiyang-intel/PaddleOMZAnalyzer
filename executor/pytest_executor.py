@@ -3,6 +3,7 @@ from executor_class import performance_and_accuracy_test_by_params
 from collections import namedtuple
 import os
 import csv
+import argparse
 from pathlib import Path
 
 def create_params_list_by_csv_file(csv_file, model_category_path, result_save_file, batch_size=1, warmup=0, repeats=1, openvino_api_type='sync'):
@@ -49,21 +50,21 @@ def create_params_list_by_csv_file(csv_file, model_category_path, result_save_fi
 
     return params_list
 
-@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleclas_operators.csv', '../exporter/paddleclas', './paddleclas_result.csv', warmup=1))
-def get_param_of_classify_and_test(request):
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleclas_full_operators.csv', '../exporter/paddleclas', './paddleclas_full_result.csv', warmup=1))
+def get_param_of_all_classify_and_test(request):
     return request.param
 
-@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleseg_operators.csv', '../exporter/paddleseg', './paddleseg_result.csv', warmup=1))
-def get_param_of_segmentation_and_test(request):
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleseg_full_operators.csv', '../exporter/paddleseg', './paddleseg_full_result.csv', warmup=1))
+def get_param_of_all_segmentation_and_test(request):
     return request.param
 
-@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddledet_operators.csv', '../exporter/paddledet', './paddledet_result.csv', warmup=1))
-def get_param_of_detection_and_test(request):
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddledet_full_operators.csv', '../exporter/paddledet', './paddledet_full_result.csv', warmup=1))
+def get_param_of_all_detection_and_test(request):
     return request.param
 
-def test_classify(get_param_of_classify_and_test):
-    param = get_param_of_classify_and_test
-    print('######Classify Models Test######')
+def test_all_classify(get_param_of_all_classify_and_test):
+    param = get_param_of_all_classify_and_test
+    print('######Classify All Models Test######')
     print("result_prefix_str:", param.result_prefix_str)
     print("model_file:", param.model_file)
     print("model_params_file:", param.model_params_file)
@@ -76,9 +77,9 @@ def test_classify(get_param_of_classify_and_test):
     performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
     return
 
-def test_segmentation(get_param_of_segmentation_and_test):
-    param = get_param_of_segmentation_and_test
-    print('######Segmentation Models Test######')
+def test_all_segmentation(get_param_of_all_segmentation_and_test):
+    param = get_param_of_all_segmentation_and_test
+    print('######Segmentation All Models Test######')
     print("result_prefix_str:", param.result_prefix_str)
     print("model_file:", param.model_file)
     print("model_params_file:", param.model_params_file)
@@ -91,9 +92,9 @@ def test_segmentation(get_param_of_segmentation_and_test):
     performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
     return
 
-def test_detection(get_param_of_detection_and_test):
-    param = get_param_of_detection_and_test
-    print('######Detection Models Test######')
+def test_all_detection(get_param_of_all_detection_and_test):
+    param = get_param_of_all_detection_and_test
+    print('######Detection All Models Test######')
     print("result_prefix_str:", param.result_prefix_str)
     print("model_file:", param.model_file)
     print("model_params_file:", param.model_params_file)
@@ -105,7 +106,88 @@ def test_detection(get_param_of_detection_and_test):
     print("openvino_api_type:", param.openvino_api_type)
     performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
     return
+
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleclas_filtered_operators.csv', '../exporter/paddleclas', './paddleclas_filtered_result.csv', warmup=1))
+def get_param_of_filtered_classify_and_test(request):
+    return request.param
+
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddleseg_filtered_operators.csv', '../exporter/paddleseg', './paddleseg_filtered_result.csv', warmup=1))
+def get_param_of_filtered_segmentation_and_test(request):
+    return request.param
+
+@pytest.fixture(params=create_params_list_by_csv_file('../analyzer/paddledet_filtered_operators.csv', '../exporter/paddledet', './paddledet_filtered_result.csv', warmup=1))
+def get_param_of_filtered_detection_and_test(request):
+    return request.param
+
+def test_filtered_classify(get_param_of_filtered_classify_and_test):
+    param = get_param_of_filtered_classify_and_test
+    print('######Classify Filtered Models Test######')
+    print("result_prefix_str:", param.result_prefix_str)
+    print("model_file:", param.model_file)
+    print("model_params_file:", param.model_params_file)
+    print("result_save_file:", param.result_save_file)
+    print("result_level:", param.result_level)
+    print("batch_size:", param.batch_size)
+    print("warmup:", param.warmup)
+    print("repeats:", param.repeats)
+    print("openvino_api_type:", param.openvino_api_type)
+    performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
+    return
+
+def test_filtered_segmentation(get_param_of_filtered_segmentation_and_test):
+    param = get_param_of_filtered_segmentation_and_test
+    print('######Segmentation Filtered Models Test######')
+    print("result_prefix_str:", param.result_prefix_str)
+    print("model_file:", param.model_file)
+    print("model_params_file:", param.model_params_file)
+    print("result_save_file:", param.result_save_file)
+    print("result_level:", param.result_level)
+    print("batch_size:", param.batch_size)
+    print("warmup:", param.warmup)
+    print("repeats:", param.repeats)
+    print("openvino_api_type:", param.openvino_api_type)
+    performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
+    return
+
+def test_filtered_detection(get_param_of_filtered_detection_and_test):
+    param = get_param_of_filtered_detection_and_test
+    print('######Detection Filtered Models Test######')
+    print("result_prefix_str:", param.result_prefix_str)
+    print("model_file:", param.model_file)
+    print("model_params_file:", param.model_params_file)
+    print("result_save_file:", param.result_save_file)
+    print("result_level:", param.result_level)
+    print("batch_size:", param.batch_size)
+    print("warmup:", param.warmup)
+    print("repeats:", param.repeats)
+    print("openvino_api_type:", param.openvino_api_type)
+    performance_and_accuracy_test_by_params(param.result_prefix_str, param.model_file, param.model_params_file, param.result_save_file,  param.result_level, param.batch_size, param.warmup, param.repeats, param.openvino_api_type)
+    return
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument("--test_mode", type=str, default='filtered', choices=['all', 'filtered', 'all_classify', 'all_detection', 'all_segmentation', 'filtered_classify', 'filtered_detection', 'filtered_segmentation'], help="test mode, all: execute all models, filtered: only execute the filtered models, all_classify: execute all classify models, all_detection: execute all detection models, all_segmentation: execute all segmentation models, filtered_classify: only execute filtered classify models, filtered_segmentation: only execute filtered segmentation models, filtered_detection: only execute filtered detection models")
+
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    # pytest.main(['-s','pytest_executor.py'])
-    pytest.main(['pytest_executor.py'])
+    args = parse_args()
+    if args.test_mode == 'all':
+        # pytest.main(['-s','pytest_executor.py'])
+        pytest.main(['pytest_executor.py::test_all_classify', 'pytest_executor.py::test_all_segmentation', 'pytest_executor.py::test_all_detection'])
+    elif args.test_mode == 'filtered':
+        pytest.main(['pytest_executor.py::test_filtered_classify', 'pytest_executor.py::test_filtered_segmentation', 'pytest_executor.py::test_filtered_detection'])
+    elif args.test_mode == 'all_classify':
+        pytest.main(['-v', 'pytest_executor.py::test_all_classify'])
+    elif args.test_mode == 'all_detection':
+        pytest.main(['-v', 'pytest_executor.py::test_all_segmentation'])
+    elif args.test_mode == 'all_segmentation':
+        pytest.main(['-v', 'pytest_executor.py::test_all_detection'])
+    elif args.test_mode == 'filtered_classify':
+        pytest.main(['-v', 'pytest_executor.py::test_filtered_classify'])
+    elif args.test_mode == 'filtered_detection':
+        pytest.main(['-v', 'pytest_executor.py::test_filtered_detection'])
+    elif args.test_mode == 'filtered_segmentation':
+        pytest.main(['-v', 'pytest_executor.py::test_filtered_segmentation'])
