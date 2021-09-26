@@ -278,7 +278,7 @@ None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/_base_/ssdlite_mobilenet
 None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/ssdlite_ghostnet_320_coco.yml,None
 None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/ssdlite_mobilenet_v1_300_coco.yml,None
 None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/ssdlite_mobilenet_v3_large_320_coco.yml,None
-None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,None
+None,/home/build/huzhaoyang/PaddleDetection/configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams
 None,/home/build/huzhaoyang/PaddleDetection/configs/ttfnet/_base_/optimizer_10x.yml,None
 None,/home/build/huzhaoyang/PaddleDetection/configs/ttfnet/_base_/optimizer_1x.yml,None
 None,/home/build/huzhaoyang/PaddleDetection/configs/ttfnet/_base_/optimizer_20x.yml,None

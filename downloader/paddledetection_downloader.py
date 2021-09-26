@@ -47,6 +47,11 @@ class paddledet_downloader(base_downloader):
         for temp_file_name in self.sum_yml_and_yaml_list:
             config_base = os.path.basename(temp_file_name)
             config_base = os.path.splitext(config_base)[0]
+            # ssdlite_mobilenet_v3_small_320_coco
+            if config_base == 'ssdlite_mobilenet_v3_small_320_coco':
+                link = 'https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams'
+                self.all_model_info_list.append(PDAllModelInfo('None', str(temp_file_name), link))
+                continue
             pattern = re.compile(r".*/%s.pdparams" %config_base)
             match_url_list = []
             for key in self.all_pdparams_urls:

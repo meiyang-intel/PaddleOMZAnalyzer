@@ -182,9 +182,9 @@ if __name__ == '__main__':
     elif args.test_mode == 'all_classify':
         pytest.main(['-v', 'pytest_executor.py::test_all_classify'])
     elif args.test_mode == 'all_detection':
-        pytest.main(['-v', 'pytest_executor.py::test_all_segmentation'])
-    elif args.test_mode == 'all_segmentation':
         pytest.main(['-v', 'pytest_executor.py::test_all_detection'])
+    elif args.test_mode == 'all_segmentation':
+        pytest.main(['-v', 'pytest_executor.py::test_all_segmentation'])
     elif args.test_mode == 'filtered_classify':
         pytest.main(['-v', 'pytest_executor.py::test_filtered_classify'])
     elif args.test_mode == 'filtered_detection':
