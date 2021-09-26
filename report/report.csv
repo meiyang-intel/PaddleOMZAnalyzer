@@ -1,0 +1,9 @@
+category,total_models_downloadable,total_models_exportable,total_models_allops_converted,total_models_executable,total_models_accuracycheck_pass,total_models_accuracycheck_pass/total_models_downloadable
+classify,131,125,122,113,110,110/131
+segmentation,58,55,34,25,22,22/58
+detection,176,113,29,24,4,4/176
+
+category,total_ops_in_catogary,total_ops_not_converted,paddle_frontend_supported_ops_number,total_ops_in_catogary/total_ops_not_converted,unsupported_set,
+classify,33,2,67,33/2,"{'swish', 'sum'}",
+segmentation,47,13,67,47/13,"{'reverse', 'select_input', 'grid_sampler', 'greater_than', 'elementwise_floordiv', 'reduce_max', 'reduce_mean', 'p_norm', 'conditional_block', 'linspace', 'logical_or', 'tile', 'ceil'}",
+detection,91,40,67,91/40,"{'box_coder', 'select_input', 'floor', 'elementwise_floordiv', 'softplus', 'assign', 'while', 'where', 'sum', 'tensor_array_to_tensor', 'distribute_fpn_proposals', 'p_norm', 'gather', 'group_norm', 'tile', 'logical_and', 'lod_array_length', 'where_index', 'tril_triu', 'round', 'greater_than', 'write_to_array', 'reduce_min', 'less_than', 'exp', 'gather_nd', 'reduce_max', 'conditional_block', 'linspace', 'reduce_sum', 'top_k_v2', 'roi_align', 'multiclass_nms2', 'multiclass_nms', 'meshgrid', 'strided_slice', 'prior_box', 'elementwise_mod', 'stack', 'set_value'}",
