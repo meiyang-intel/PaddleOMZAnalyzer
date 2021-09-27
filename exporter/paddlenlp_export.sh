@@ -31,6 +31,30 @@ for BERTVERSION in $bert_list;do
     fi
 done
 
+
+ernie_list="
+            ernie-1.0
+            ernie-tiny
+            ernie-2.0-en
+            ernie-2.0-en-finetuned-squad
+            ernie-2.0-large-en
+            ernie-doc-base-zh
+            ernie-doc-base-en
+            ernie-gen-base-en
+            ernie-gen-large-en
+            ernie-gen-large-en-430g
+            ernie-gram-zh
+            "
+for variance in $ernie_list;do
+    echo $variance
+    language_model=$omzanlayzer_dir/exporter/paddlenlp/$variance
+    if [ ! -d "$language_model" ]; then
+        echo "INFO: exporting $language_model"
+        cd $paddlenlp_dir/examples/language_model/bert
+        python3 export_model.py     --model_type ernie     --model_path $variance     --output_path $language_model/model
+    fi
+done
+
 # https://github.com/PaddlePaddle/PaddleNLP/tree/develop/examples/machine_translation/transformer#%E5%AF%BC%E5%87%BA%E9%9D%99%E6%80%81%E5%9B%BE%E9%A2%84%E6%B5%8B%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%A2%84%E6%B5%8B%E5%BC%95%E6%93%8E%E9%A2%84%E6%B5%8B
 # Modify yaml/inference_model_dir first - TODO
 TRANSFORMER=$omzanlayzer_dir/exporter/paddlenlp/transformer/

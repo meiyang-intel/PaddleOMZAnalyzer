@@ -27,40 +27,55 @@ def parse_model_ops(exported_path):
 if __name__ == '__main__':
     __dir__ = os.path.dirname(os.path.abspath(__file__))
 
-    #BERT
-    bert_all = ['bert-base-uncased', 
-                'bert-large-uncased', 
-                'bert-base-cased',
-                'bert-large-cased',
-                'bert-base-multilingual-uncased',
-                'bert-base-multilingual-cased',
-                'bert-base-chinese',
-                'bert-wwm-chinese',
-                'bert-wwm-ext-chinese',
-                'simbert-base-chinese'
-                ]
-    for bert in bert_all:
-        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/{}'.format(bert)))
-        if os.path.exists(test_model):
-            operator_set, unsupported_ops = parse_model_ops(test_model)
+    with open("paddlenlp_filtered_operators.csv", 'w', newline='') as csvfile:
+        # title for each column
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(['model', 'model_config', 'model_params', 'operator_set', 'unsupported_ops'])
 
-    # waybill_ie
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/waybill_ie'))
-    operator_set, unsupported_ops = parse_model_ops(test_model)
+        #BERT
+        language_models = ['bert-base-uncased', 
+                    'bert-large-uncased', 
+                    'bert-base-cased',
+                    'bert-large-cased',
+                    'bert-base-multilingual-uncased',
+                    'bert-base-multilingual-cased',
+                    'bert-base-chinese',
+                    'bert-wwm-chinese',
+                    'bert-wwm-ext-chinese',
+                    'simbert-base-chinese'
+                    ]
 
-    # transformer
-    # base
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/base'))
-    operator_set, unsupported_ops = parse_model_ops(test_model)
-    # big
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/big'))
-    operator_set, unsupported_ops = parse_model_ops(test_model)
+        language_models += ['ernie-1.0',
+                    'ernie-tiny',
+                    'ernie-2.0-en',
+                    'ernie-2.0-en-finetuned-squad',
+                    'ernie-2.0-large-en',
+                    'ernie-doc-base-zh',
+                    'ernie-doc-base-en',
+                    'ernie-gen-base-en',
+                    'ernie-gen-large-en',
+                    'ernie-gen-large-en-430g',
+                    'ernie-gram-zh'
+                    ]
 
+        for lm in language_models:
+            test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/{}'.format(lm)))
+            if os.path.exists(test_model):
+                operator_set, unsupported_ops = parse_model_ops(test_model)
+                writer.writerow([lm, '', '', ','.join(operator_set), ','.join(unsupported_ops) if len(unsupported_ops)>0 else 'None'])
 
-'''
-model operator_set len(operator_set) unsupported_ops len(unsupported_ops)
-paddlenlp/bert ['cast', 'cumsum', 'dropout', 'elementwise_add', 'elementwise_sub', 'equal', 'fill_any_like', 'fill_constant', 'gelu', 'layer_norm', 'lookup_table_v2', 'matmul', 'matmul_v2', 'reshape2', 'scale', 'slice', 'softmax', 'tanh', 'transpose2', 'unsqueeze2'] 20 ['cumsum', 'fill_any_like', 'gelu', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'tanh'] 7
-paddlenlp/waybill_ie ['cast', 'cumsum', 'dropout', 'elementwise_add', 'elementwise_sub', 'equal', 'fill_any_like', 'fill_constant', 'layer_norm', 'lookup_table_v2', 'matmul', 'matmul_v2', 'relu', 'reshape2', 'scale', 'softmax', 'transpose2', 'unsqueeze2'] 18 ['cumsum', 'fill_any_like', 'layer_norm', 'lookup_table_v2', 'matmul_v2'] 5
-paddlenlp/transformer/base ['assign_value', 'cast', 'dropout', 'elementwise_add', 'elementwise_mul', 'equal', 'expand', 'fill_constant', 'fill_constant_batch_size_like', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'logical_not', 'lookup_table_v2', 'matmul', 'matmul_v2', 'not_equal', 'range', 'reduce_all', 'relu', 'reshape2', 'scale', 'shape', 'slice', 'softmax', 'tensor_array_to_tensor', 'transpose2', 'unsqueeze2', 'while'] 29 ['expand', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'not_equal', 'reduce_all', 'tensor_array_to_tensor', 'while'] 10
-paddlenlp/transformer/big ['assign_value', 'cast', 'dropout', 'elementwise_add', 'elementwise_mul', 'equal', 'expand', 'fill_constant', 'fill_constant_batch_size_like', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'logical_not', 'lookup_table_v2', 'matmul', 'matmul_v2', 'not_equal', 'range', 'reduce_all', 'relu', 'reshape2', 'scale', 'shape', 'slice', 'softmax', 'tensor_array_to_tensor', 'transpose2', 'unsqueeze2', 'while'] 29 ['expand', 'fill_zeros_like', 'gather_tree', 'layer_norm', 'lookup_table_v2', 'matmul_v2', 'not_equal', 'reduce_all', 'tensor_array_to_tensor', 'while'] 10
-'''
+        # waybill_ie
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/waybill_ie'))
+        operator_set, unsupported_ops = parse_model_ops(test_model)
+        writer.writerow(['waybill_ie', '', '', ','.join(operator_set), ','.join(unsupported_ops) if len(unsupported_ops)>0 else 'None'])
+
+        # transformer
+        # base
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/base'))
+        operator_set, unsupported_ops = parse_model_ops(test_model)
+        writer.writerow(['transformer/base', '', '', ','.join(operator_set), ','.join(unsupported_ops) if len(unsupported_ops)>0 else 'None'])
+
+        # big
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddlenlp/transformer/big'))
+        operator_set, unsupported_ops = parse_model_ops(test_model)
+        writer.writerow(['transformer/big', '', '', ','.join(operator_set), ','.join(unsupported_ops) if len(unsupported_ops)>0 else 'None'])
