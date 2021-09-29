@@ -7,4 +7,5 @@ exporter/paddleclas/
 exporter/paddledet/
 exporter/paddlenlp/
 exporter/paddleseg/
+exporter/paddleocr/
 .vscode
