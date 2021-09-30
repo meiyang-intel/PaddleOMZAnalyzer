@@ -1,2 +1,7 @@
+ch_ppocr_mobile_v2.0_det_infer,,,"batch_norm,concat,conv2d,conv2d_transpose,depthwise_conv2d,elementwise_add,hard_swish,nearest_interp_v2,relu,scale,sigmoid",None
 rec_mv3_none_bilstm_ctc,,,"batch_norm,conv2d,depthwise_conv2d,elementwise_add,elementwise_mul,fill_constant_batch_size_like,hard_sigmoid,hard_swish,matmul,pool2d,relu,rnn,scale,softmax,squeeze2,transpose2",None
+ch_ppocr_mobile_v2.0_rec_infer,,,"batch_norm,conv2d,depthwise_conv2d,elementwise_add,elementwise_mul,fill_constant_batch_size_like,hard_sigmoid,hard_swish,matmul,pool2d,relu,rnn,scale,softmax,squeeze2,transpose2",None
+ch_PP-OCRv2_rec_infer,,,"batch_norm,conv2d,depthwise_conv2d,elementwise_add,elementwise_mul,fill_constant_batch_size_like,hard_sigmoid,hard_swish,matmul,pool2d,relu,rnn,scale,softmax,squeeze2,transpose2",None
+ch_PP-OCRv2_det_infer,,,"batch_norm,concat,conv2d,conv2d_transpose,depthwise_conv2d,elementwise_add,hard_swish,nearest_interp_v2,relu,scale,sigmoid",None
 det_mv3_db_v2.0,,,"batch_norm,concat,conv2d,conv2d_transpose,depthwise_conv2d,elementwise_add,elementwise_mul,hard_sigmoid,hard_swish,nearest_interp_v2,pool2d,relu,scale,sigmoid",None
+ch_ppocr_mobile_v2.0_cls_infer,,,"batch_norm,conv2d,depthwise_conv2d,elementwise_add,elementwise_mul,hard_sigmoid,hard_swish,matmul,pool2d,relu,reshape2,scale,shape,slice,softmax",None
