@@ -112,34 +112,29 @@ def main():
     args = parse_args()
 
     result_table_one = []
-    result_table_one.append(['category', 'total_models_downloadable', 'total_models_exportable', 'total_models_allops_converted', 'total_models_executable', 'total_models_accuracycheck_pass', 'total_models_accuracycheck_pass/total_models_downloadable'])
+    result_table_one.append(['category', 'total_models_downloadable', 'total_models_exportable', 'total_models_allops_converted', 'total_models_executable', 'total_models_accuracycheck_pass', 'total_models_accuracycheck_pass/total_models_exportable'])
     result_table_two = []
     result_table_two.append(['category', 'total_ops_in_catogary', 'total_ops_not_converted', 'paddle_frontend_supported_ops_number', 'total_ops_in_catogary/total_ops_not_converted', 'unsupported_set',''])
     ops_result_table = []
 
-    if args.analyzer_result_file != '' and args.category != '' and args.executor_result_file != '':
+    if args.analyzer_result_file != '' and args.category != '':
         logging.info("Single analyze mode:")
         logging.info("{}: {} , {}.".format(args.category, args.analyzer_result_file, args.executor_result_file))
-        if not os.path.exists(args.analyzer_result_file) or not os.path.exists(args.executor_result_file):
-            logging.error("{} or {} not exist.".format(args.analyzer_result_file, args.executor_result_file))
-            return
-        result_analyzer = manage_analyzer_result(args.analyzer_result_file, args.category)
-        result_executor = manage_executor_result(args.executor_result_file, args.category)
-        result_table_one.append([result_analyzer.category, result_analyzer.total_models_downloadable, result_analyzer.total_models_exportable, result_analyzer.total_models_allops_converted, result_executor.total_models_executable, result_executor.total_models_accuracycheck_pass, str(result_executor.total_models_accuracycheck_pass) + '/' + str(result_analyzer.total_models_downloadable)])
-        result_table_two.append([result_analyzer.category, result_analyzer.total_ops_in_catogary, result_analyzer.total_ops_not_converted, result_analyzer.paddle_frontend_supported_ops_number, str(result_analyzer.total_ops_in_catogary) + '/' + str(result_analyzer.total_ops_not_converted), result_analyzer.unsupported_set, ''])
+
+        default_list = [(args.category, args.analyzer_result_file, args.executor_result_file)]
     else:
         logging.info("You did not set the analyzer_result_file or executor_result_file or category, will run default analyze mode:")
         default_list = get_default_count_list()
         if len(default_list) == 0:
             logging.error("get default_list failed.")
             return
-
-        for category, analyzer_file, executor_file in default_list:
-            logging.info("{}: {}, {}.".format(category, analyzer_file, executor_file))
-            result_analyzer = manage_analyzer_result(analyzer_file, category)
-            result_executor = manage_executor_result(executor_file, category)
-            result_table_one.append([result_analyzer.category, result_analyzer.total_models_downloadable, result_analyzer.total_models_exportable, result_analyzer.total_models_allops_converted, result_executor.total_models_executable, result_executor.total_models_accuracycheck_pass, str(result_executor.total_models_accuracycheck_pass) + '/' + str(result_analyzer.total_models_downloadable)])
-            result_table_two.append([result_analyzer.category, result_analyzer.total_ops_in_catogary, result_analyzer.total_ops_not_converted, result_analyzer.paddle_frontend_supported_ops_number, str(result_analyzer.total_ops_in_catogary) + '/' + str(result_analyzer.total_ops_not_converted), result_analyzer.unsupported_set, ''])
+            
+    for category, analyzer_file, executor_file in default_list:
+        logging.info("{}: {}, {}.".format(category, analyzer_file, executor_file))
+        result_analyzer = manage_analyzer_result(analyzer_file, category)
+        result_executor = manage_executor_result(executor_file, category)
+        result_table_one.append([result_analyzer.category, result_analyzer.total_models_downloadable, result_analyzer.total_models_exportable, result_analyzer.total_models_allops_converted, result_executor.total_models_executable, result_executor.total_models_accuracycheck_pass, str(result_executor.total_models_accuracycheck_pass) + '/' + str(result_analyzer.total_models_exportable)])
+        result_table_two.append([result_analyzer.category, result_analyzer.total_ops_in_catogary, result_analyzer.total_ops_not_converted, result_analyzer.paddle_frontend_supported_ops_number, str(result_analyzer.total_ops_in_catogary) + '/' + str(result_analyzer.total_ops_not_converted), result_analyzer.unsupported_set, ''])
 
     with open('./report.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
