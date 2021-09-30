@@ -51,16 +51,16 @@ def manage_analyzer_result(analyzer_file_name, category):
                                 operate_name = row[i].replace('"', '')
                                 sum_unsupported_ops_set.add(operate_name)
                                 if operate_name not in ops_dict:
-                                    ops_dict[operate_name] = [pdparams_url]
+                                    ops_dict[operate_name] = [pdparams_url if pdparams_url!='' else row[0]]
                                 else:
-                                    ops_dict[operate_name].append(pdparams_url)
+                                    ops_dict[operate_name].append(pdparams_url if pdparams_url!='' else row[0])
                                 i = i + 1
                         operate_name = row[i].replace('"', '')
                         sum_unsupported_ops_set.add(operate_name)
                         if operate_name not in ops_dict:
-                            ops_dict[operate_name] = [pdparams_url]
+                            ops_dict[operate_name] = [pdparams_url if pdparams_url!='' else row[0]]
                         else:
-                            ops_dict[operate_name].append(pdparams_url)
+                            ops_dict[operate_name].append(pdparams_url if pdparams_url!='' else row[0])
                     else:
                         total_models_allops_converted = total_models_allops_converted + 1
 

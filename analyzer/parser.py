@@ -33,7 +33,7 @@ def main(args):
     with open("{}_filtered_operators.csv".format(args.model_zoo), 'w', newline='') as csvfile:
         # title for each column
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['model', 'model_config', 'model_params', 'operator_set', 'unsupported_ops'])
+        # writer.writerow(['model', 'model_config', 'model_params', 'operator_set', 'unsupported_ops'])
 
         paths = glob(model_zoo + "/*/", recursive = False)
         for model_path in paths:

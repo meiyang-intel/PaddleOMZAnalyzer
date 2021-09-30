@@ -1,4 +1,3 @@
-model,model_config,model_params,operator_set,unsupported_ops
 bert-base-uncased,,,"cast,cumsum,dropout,elementwise_add,elementwise_sub,equal,fill_any_like,fill_constant,gelu,layer_norm,lookup_table_v2,matmul,matmul_v2,reshape2,scale,slice,softmax,tanh,transpose2,unsqueeze2",None
 bert-large-uncased,,,"cast,cumsum,dropout,elementwise_add,elementwise_sub,equal,fill_any_like,fill_constant,gelu,layer_norm,lookup_table_v2,matmul,matmul_v2,reshape2,scale,slice,softmax,tanh,transpose2,unsqueeze2",None
 bert-base-cased,,,"cast,cumsum,dropout,elementwise_add,elementwise_sub,equal,fill_any_like,fill_constant,gelu,layer_norm,lookup_table_v2,matmul,matmul_v2,reshape2,scale,slice,softmax,tanh,transpose2,unsqueeze2",None

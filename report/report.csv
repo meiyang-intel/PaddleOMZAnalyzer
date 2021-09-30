@@ -1,9 +1,13 @@
-category,total_models_downloadable,total_models_exportable,total_models_allops_converted,total_models_executable,total_models_accuracycheck_pass,total_models_accuracycheck_pass/total_models_downloadable
-classify,131,125,122,113,110,110/131
-segmentation,58,55,34,25,22,22/58
-detection,176,113,29,24,4,4/176
+category,total_models_downloadable,total_models_exportable,total_models_allops_converted,total_models_executable,total_models_accuracycheck_pass,total_models_accuracycheck_pass/total_models_exportable
+classify,131,125,122,113,110,110/125
+segmentation,58,55,34,25,22,22/55
+detection,176,113,29,24,4,4/113
+nlp,17,17,15,0,0,0/17
+ocr,2,2,2,0,0,0/2
 
 category,total_ops_in_catogary,total_ops_not_converted,paddle_frontend_supported_ops_number,total_ops_in_catogary/total_ops_not_converted,unsupported_set,
 classify,33,2,67,33/2,"['sum', 'swish']",
 segmentation,47,13,67,47/13,"['ceil', 'conditional_block', 'elementwise_floordiv', 'greater_than', 'grid_sampler', 'linspace', 'logical_or', 'p_norm', 'reduce_max', 'reduce_mean', 'reverse', 'select_input', 'tile']",
 detection,91,40,67,91/40,"['assign', 'box_coder', 'conditional_block', 'distribute_fpn_proposals', 'elementwise_floordiv', 'elementwise_mod', 'exp', 'floor', 'gather', 'gather_nd', 'greater_than', 'group_norm', 'less_than', 'linspace', 'lod_array_length', 'logical_and', 'meshgrid', 'multiclass_nms', 'multiclass_nms2', 'p_norm', 'prior_box', 'reduce_max', 'reduce_min', 'reduce_sum', 'roi_align', 'round', 'select_input', 'set_value', 'softplus', 'stack', 'strided_slice', 'sum', 'tensor_array_to_tensor', 'tile', 'top_k_v2', 'tril_triu', 'where', 'where_index', 'while', 'write_to_array']",
+nlp,34,7,67,34/7,"['expand', 'fill_zeros_like', 'gather_tree', 'not_equal', 'reduce_all', 'tensor_array_to_tensor', 'while']",
+ocr,20,0,67,20/0,[],
