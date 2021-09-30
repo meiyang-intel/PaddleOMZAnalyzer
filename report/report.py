@@ -59,7 +59,7 @@ def manage_analyzer_result(analyzer_file_name, category):
                         total_models_allops_converted = total_models_allops_converted + 1
 
         logging.debug(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), sum_unsupported_ops_set)
-        return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), sum_unsupported_ops_set)
+        return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), sorted(sum_unsupported_ops_set))
 
 
 def manage_executor_result(executor_file_name, category):
