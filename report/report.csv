@@ -4,6 +4,6 @@ segmentation,58,55,34,25,22,22/58
 detection,176,113,29,24,4,4/176
 
 category,total_ops_in_catogary,total_ops_not_converted,paddle_frontend_supported_ops_number,total_ops_in_catogary/total_ops_not_converted,unsupported_set,
-classify,33,2,67,33/2,"{'swish', 'sum'}",
-segmentation,47,13,67,47/13,"{'reverse', 'select_input', 'grid_sampler', 'greater_than', 'elementwise_floordiv', 'reduce_max', 'reduce_mean', 'p_norm', 'conditional_block', 'linspace', 'logical_or', 'tile', 'ceil'}",
-detection,91,40,67,91/40,"{'box_coder', 'select_input', 'floor', 'elementwise_floordiv', 'softplus', 'assign', 'while', 'where', 'sum', 'tensor_array_to_tensor', 'distribute_fpn_proposals', 'p_norm', 'gather', 'group_norm', 'tile', 'logical_and', 'lod_array_length', 'where_index', 'tril_triu', 'round', 'greater_than', 'write_to_array', 'reduce_min', 'less_than', 'exp', 'gather_nd', 'reduce_max', 'conditional_block', 'linspace', 'reduce_sum', 'top_k_v2', 'roi_align', 'multiclass_nms2', 'multiclass_nms', 'meshgrid', 'strided_slice', 'prior_box', 'elementwise_mod', 'stack', 'set_value'}",
+classify,33,2,67,33/2,"['sum', 'swish']",
+segmentation,47,13,67,47/13,"['ceil', 'conditional_block', 'elementwise_floordiv', 'greater_than', 'grid_sampler', 'linspace', 'logical_or', 'p_norm', 'reduce_max', 'reduce_mean', 'reverse', 'select_input', 'tile']",
+detection,91,40,67,91/40,"['assign', 'box_coder', 'conditional_block', 'distribute_fpn_proposals', 'elementwise_floordiv', 'elementwise_mod', 'exp', 'floor', 'gather', 'gather_nd', 'greater_than', 'group_norm', 'less_than', 'linspace', 'lod_array_length', 'logical_and', 'meshgrid', 'multiclass_nms', 'multiclass_nms2', 'p_norm', 'prior_box', 'reduce_max', 'reduce_min', 'reduce_sum', 'roi_align', 'round', 'select_input', 'set_value', 'softplus', 'stack', 'strided_slice', 'sum', 'tensor_array_to_tensor', 'tile', 'top_k_v2', 'tril_triu', 'where', 'where_index', 'while', 'write_to_array']",
