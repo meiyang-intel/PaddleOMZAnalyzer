@@ -21,6 +21,7 @@ def manage_analyzer_result(analyzer_file_name, category):
     sum_supported_ops_set = set()
     sum_unsupported_ops_set = set()
 
+    analyzer_file_name = os.path.abspath(os.path.join(__dir__, '../analyzer/{}'.format(analyzer_file_name)))
     if not os.path.exists(analyzer_file_name):
         return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable,
                             total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), 
@@ -71,6 +72,7 @@ def manage_executor_result(executor_file_name, category):
     total_models_executable = 0
     total_models_accuracycheck_pass = 0
 
+    executor_file_name = os.path.abspath(os.path.join(__dir__, '../executor/{}'.format(executor_file_name)))
     if not os.path.exists(executor_file_name):
         return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass)
 
@@ -96,11 +98,11 @@ def parse_args():
 
 def get_default_count_list():
     default_list = [
-        ('classify', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleclas_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleclas_full_result.csv'))),
-        ('segmentation', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleseg_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleseg_full_result.csv'))),
-        ('detection', os.path.abspath(os.path.join(__dir__, '../analyzer/paddledet_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddledet_full_result.csv'))),
-        ('nlp', os.path.abspath(os.path.join(__dir__, '../analyzer/paddlenlp_filtered_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddlenlp_filtered_result.csv'))),
-        ('ocr', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleocr_filtered_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleocr_filtered_result.csv')))
+        ('classify',        'paddleclas_full_operators.csv',    'paddleclas_full_result.csv'),
+        ('segmentation',    'paddleseg_full_operators.csv',     'paddleseg_full_result.csv'),
+        ('detection',       'paddledet_full_operators.csv',     'paddledet_full_result.csv'),
+        ('nlp',             'paddlenlp_filtered_operators.csv', 'paddlenlp_filtered_result.csv'),
+        ('ocr',             'paddleocr_filtered_operators.csv', 'paddleocr_filtered_result.csv')
     ]
     return default_list
 
