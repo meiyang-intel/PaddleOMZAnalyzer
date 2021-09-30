@@ -21,6 +21,11 @@ def manage_analyzer_result(analyzer_file_name, category):
     sum_supported_ops_set = set()
     sum_unsupported_ops_set = set()
 
+    if not os.path.exists(analyzer_file_name):
+        return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable,
+                            total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), 
+                            sorted(sum_unsupported_ops_set))
+        
     begin_pattern = re.compile(r"\".+")
     end_pattern = re.compile(r".+\"")
     with open(analyzer_file_name, newline='') as csvfile:
@@ -65,6 +70,10 @@ def manage_analyzer_result(analyzer_file_name, category):
 def manage_executor_result(executor_file_name, category):
     total_models_executable = 0
     total_models_accuracycheck_pass = 0
+
+    if not os.path.exists(executor_file_name):
+        return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass)
+
     with open(executor_file_name, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
@@ -86,33 +95,14 @@ def parse_args():
     return parser.parse_args()
 
 def get_default_count_list():
-    default_list = []
-    default_category = 'classify'
-    default_analyzer_file_path =os.path.abspath(os.path.join(__dir__, '../analyzer/paddleclas_full_operators.csv'))
-    default_executor_file_path =os.path.abspath(os.path.join(__dir__, '../executor/paddleclas_full_result.csv'))
-    if os.path.exists(default_analyzer_file_path) and os.path.exists(default_executor_file_path):
-        default_list.append((default_category, default_analyzer_file_path, default_executor_file_path))
-    else:
-        logging.warning("{}: have no this file {} or , jump it.".format(default_category, default_analyzer_file_path, default_executor_file_path))
-
-    default_category = 'segmentation'
-    default_analyzer_file_path =os.path.abspath(os.path.join(__dir__, '../analyzer/paddleseg_full_operators.csv'))
-    default_executor_file_path =os.path.abspath(os.path.join(__dir__, '../executor/paddleseg_full_result.csv'))
-    if os.path.exists(default_analyzer_file_path) and os.path.exists(default_executor_file_path):
-        default_list.append((default_category, default_analyzer_file_path, default_executor_file_path))
-    else:
-        logging.warning("{}: have no this file {} or {} , jump it.".format(default_category, default_analyzer_file_path, default_executor_file_path))
-
-    default_category = 'detection'
-    default_analyzer_file_path =os.path.abspath(os.path.join(__dir__, '../analyzer/paddledet_full_operators.csv'))
-    default_executor_file_path =os.path.abspath(os.path.join(__dir__, '../executor/paddledet_full_result.csv'))
-    if os.path.exists(default_analyzer_file_path) and os.path.exists(default_executor_file_path):
-        default_list.append((default_category, default_analyzer_file_path, default_executor_file_path))
-    else:
-        logging.warning("{}: have no this file {} or , jump it.".format(default_category, default_analyzer_file_path, default_executor_file_path))
-
+    default_list = [
+        ('classify', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleclas_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleclas_full_result.csv'))),
+        ('segmentation', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleseg_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleseg_full_result.csv'))),
+        ('detection', os.path.abspath(os.path.join(__dir__, '../analyzer/paddledet_full_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddledet_full_result.csv'))),
+        ('nlp', os.path.abspath(os.path.join(__dir__, '../analyzer/paddlenlp_filtered_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddlenlp_filtered_result.csv'))),
+        ('ocr', os.path.abspath(os.path.join(__dir__, '../analyzer/paddleocr_filtered_operators.csv')), os.path.abspath(os.path.join(__dir__, '../executor/paddleocr_filtered_result.csv')))
+    ]
     return default_list
-
 
 def main():
     #logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.DEBUG)
