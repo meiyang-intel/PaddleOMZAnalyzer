@@ -29,9 +29,8 @@ def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0
             pdpd_predict_executor = PaddlenlpPredictor(str(model_file), str(model_params_file))
             test_inputs = pdpd_predict_executor.generate_inputs(batch_size, language='English')
         elif predictor_type == 'normal':
-            pdpd_executor = PaddleExecutor(model_file)
-            test_inputs = pdpd_executor.generate_inputs(batch_size)
             pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), str(model_params_file))
+            test_inputs = pdpd_predict_executor.generate_inputs(batch_size)
         else:
             print('have no this {} paddle predictor type. Please check it.'.format(predictor_type))
 

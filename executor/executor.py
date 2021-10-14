@@ -94,6 +94,30 @@ class Executor(object):
         # inference
         self.inference(test_inputs, warmup, repeats)
 
+# helper
+def query_inputs_info(pdmodel):
+    paddle.enable_static()
+
+    # load model
+    exe = paddle.static.Executor(paddle.CPUPlace())
+    [inference_program, feed_target_names, fetch_targets] = paddle.static.load_inference_model(
+                        os.path.splitext(pdmodel)[0], # pdmodel prefix
+                        exe)
+
+    print(feed_target_names, fetch_targets)
+
+    # 输出计算图所有input结点信息
+    inputs_info = dict()
+    for ipt in feed_target_names:
+        var=inference_program.global_block().var(ipt)
+        print('model input name {} with shape {}, dtype {}'.format(ipt, var.shape, var.dtype))
+        inputs_info[ipt] = (var.shape, var.dtype)
+
+    return inputs_info, exe, inference_program, fetch_targets
+
+"""
+obsolete and replaced by PaddlePredictorExecutor
+"""
 class PaddleExecutor(Executor):
     """
     inputs of Paddle are dict.
@@ -107,25 +131,7 @@ class PaddleExecutor(Executor):
 
         paddle.enable_static()
         # Paddle-private
-        self.inference_program = None
-        self.feed_target_names = None
-        self.fetch_targets = None
-        self.exe = None
-        self.output = None
-
-        # load model
-        self.exe = paddle.static.Executor(paddle.CPUPlace())
-        [self.inference_program, self.feed_target_names, self.fetch_targets] = paddle.static.load_inference_model(
-                            os.path.splitext(self.__pdmodel__)[0], # pdmodel prefix
-                            self.exe)
-
-        print(self.feed_target_names, self.fetch_targets)
-
-        # 输出计算图所有input结点信息
-        for ipt in self.feed_target_names:
-            var=self.inference_program.global_block().var(ipt)
-            print('model input name {} with shape {}, dtype {}'.format(ipt, var.shape, var.dtype))
-            self.inputs_info[ipt] = (var.shape, var.dtype)
+        self.inputs_info, self.exe, self.inference_program, self.fetch_targets = query_inputs_info(pdmodel)
 
         # workaround for yolo and ppyolo,
         # which requires return_numpy False, else exception prompts from Paddle.
@@ -185,6 +191,9 @@ class PaddlePredictorExecutor(Executor):
         config.switch_use_feed_fetch_ops(False)
 
         self.predictor = paddle_infer.create_predictor(config)
+
+        # Paddle-private
+        self.inputs_info, _, _, _ = query_inputs_info(pdmodel)
 
     def inference(self, inputs:dict, warmup=0, repeats=1):
         input_names = self.predictor.get_input_names()
