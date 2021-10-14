@@ -224,6 +224,16 @@ class PaddlenlpPredictor(Executor):
         config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
 
         config.disable_gpu()
+        config.set_cpu_math_library_num_threads(6)
+        # cache 10 different shapes for mkldnn to avoid memory leak
+        config.set_mkldnn_cache_capacity(10)
+        config.enable_mkldnn()
+
+        # # enable memory optim
+        config.enable_memory_optim()
+        config.disable_glog_info()
+
+        config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
         config.switch_use_feed_fetch_ops(False)
 
         self.predictor = paddle_infer.create_predictor(config)

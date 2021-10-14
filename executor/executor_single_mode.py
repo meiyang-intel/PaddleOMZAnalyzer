@@ -17,3 +17,8 @@ def parse_args():
 
 if __name__ == "__main__":
     main()
+
+
+# usage:
+# NLP
+# python3 executor_single_mode.py --model_file=../exporter/paddlenlp/bert-base-cased/model.pdmodel --paddle_predictor_type=nlp --batch_size=1 --warmup=1 --repeats=10
