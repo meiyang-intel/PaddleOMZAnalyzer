@@ -3,7 +3,7 @@
 # 1. PPOCR static models are downloadable
 # https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.3/doc/doc_ch/models_list.md
 
-TARGET_DIR=$PWD/paddleocr2
+TARGET_DIR=$PWD/paddleocr
 paddleocr_dir=$PWD/../../PaddleOCR/
 
 mkdir -p $TARGET_DIR
@@ -11,7 +11,6 @@ mkdir -p $TARGET_DIR
 model_list="https://paddleocr.bj.bcebos.com/PP-OCRv2/chinese/ch_PP-OCRv2_det_infer.tar,\
 https://paddleocr.bj.bcebos.com/PP-OCRv2/chinese/ch_PP-OCRv2_rec_infer.tar,\
 https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_det_infer.tar,\
-https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_rec_infer.tar,\
 https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_cls_infer.tar\
 "
 
@@ -22,6 +21,8 @@ do
     wget $model -O - | tar -xvf - -C $TARGET_DIR
 done
 
+# TODO: how to handle the exception case, which is gzip compressed?
+wget https://paddleocr.bj.bcebos.com/dygraph_v2.0/ch/ch_ppocr_mobile_v2.0_rec_infer.tar -O - | tar -zxvf - -C $TARGET_DIR
 
 # 2. 2-stage algorithms export
 # https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.3/doc/doc_ch/algorithm_overview.md
