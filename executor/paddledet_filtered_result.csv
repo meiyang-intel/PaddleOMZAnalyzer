@@ -1,20 +1,20 @@
 "BlazeFace,static/configs/face_detection/blazeface_keypoint.yml,https://paddlemodels.bj.bcebos.com/object_detection/blazeface_keypoint.pdparams",op mapper failed,NONE,NONE,NONE,NONE
 "Faster R-CNN + FPN,configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_fpn_1x_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
 "Faster RCNN,configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/faster_rcnn_r50_1x_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
-"HRNet,configs/keypoint/hrnet/hrnet_w32_384x288.yml,https://paddledet.bj.bcebos.com/models/keypoint/hrnet_w32_384x288.pdparams",infer accuracy pass,401.82,250.59,78.82,73.01
-"HigherHRNet,configs/keypoint/higherhrnet/higherhrnet_hrnet_w32_640.yml,https://paddledet.bj.bcebos.com/models/keypoint/higherhrnet_hrnet_w32_640.pdparams",op mapper failed,725.87,512.33,NONE,NONE
+"HRNet,configs/keypoint/hrnet/hrnet_w32_384x288.yml,https://paddledet.bj.bcebos.com/models/keypoint/hrnet_w32_384x288.pdparams",infer accuracy pass,492.87,307.72,81.90,75.11
+"HigherHRNet,configs/keypoint/higherhrnet/higherhrnet_hrnet_w32_640.yml,https://paddledet.bj.bcebos.com/models/keypoint/higherhrnet_hrnet_w32_640.pdparams",op mapper failed,915.27,509.52,NONE,NONE
 "Mask R-CNN + FPN,configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_fpn_1x_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
 "Mask RCNN,configs/mask_rcnn/mask_rcnn_r50_1x_coco.yml,https://paddledet.bj.bcebos.com/models/mask_rcnn_r50_1x_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
-"PP-Yolo,configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_2x_coco.pdparams",all ops mapped,573.12,413.97,NONE,NONE
-"PP-Yolo (phase1),configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_1x_coco.pdparams",all ops mapped,564.00,416.47,NONE,NONE
-"PP-Yolo tiny,configs/ppyolo/ppyolo_tiny_650e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_tiny_650e_coco.pdparams",openvino infered success,107.86,79.38,20.74,14.35
-"PP-Yolo v2,configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolov2_r50vd_dcn_365e_coco.pdparams",op mapper failed,1378.94,1028.84,NONE,NONE
+"PP-Yolo,configs/ppyolo/ppyolo_r50vd_dcn_2x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_2x_coco.pdparams",all ops mapped,711.72,423.04,NONE,NONE
+"PP-Yolo (phase1),configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_r50vd_dcn_1x_coco.pdparams",all ops mapped,582.30,433.91,NONE,NONE
+"PP-Yolo tiny,configs/ppyolo/ppyolo_tiny_650e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolo_tiny_650e_coco.pdparams",openvino infered success,123.95,78.30,20.72,12.88
+"PP-Yolo v2,configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml,https://paddledet.bj.bcebos.com/models/ppyolov2_r50vd_dcn_365e_coco.pdparams",op mapper failed,1264.87,1004.90,NONE,NONE
 "PP-Yolo v2,configs/ppyolo/ppyolov2_r50vd_dcn_voc.yml,None",op mapper failed,NONE,NONE,NONE,NONE
 "SOLO v2,configs/solov2/solov2_r50_fpn_1x_coco.yml,https://paddledet.bj.bcebos.com/models/solov2_r50_fpn_1x_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
-"SSD-MobileNetV1,configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml,https://paddledet.bj.bcebos.com/models/ssd_mobilenet_v1_300_120e_voc.pdparams",op mapper failed,NONE,NONE,NONE,NONE
-"SSD-MobileNetV3,configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams",op mapper failed,NONE,NONE,NONE,NONE
+"SSD-MobileNetV1,configs/ssd/ssd_mobilenet_v1_300_120e_voc.yml,https://paddledet.bj.bcebos.com/models/ssd_mobilenet_v1_300_120e_voc.pdparams",all ops mapped,NONE,NONE,NONE,NONE
+"SSD-MobileNetV3,configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml,https://paddledet.bj.bcebos.com/models/ssdlite_mobilenet_v3_small_320_coco.pdparams",all ops mapped,NONE,NONE,NONE,NONE
 "YoloV3-DarkNet53,configs/yolov3/yolov3_darknet53_270e_voc.yml,None",op mapper failed,NONE,NONE,NONE,NONE
-"YoloV3-DarkNet53 (phase1),configs/yolov3/yolov3_darknet53_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_darknet53_270e_coco.pdparams",openvino infered success,492.69,307.97,83.42,79.98
-"YoloV3-ResNet50_vd,configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_r50vd_dcn_270e_coco.pdparams",openvino infered success,458.54,325.75,1588.41,1578.64
+"YoloV3-DarkNet53 (phase1),configs/yolov3/yolov3_darknet53_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_darknet53_270e_coco.pdparams",openvino infered success,503.44,338.01,94.04,104.46
+"YoloV3-ResNet50_vd,configs/yolov3/yolov3_r50vd_dcn_270e_coco.yml,https://paddledet.bj.bcebos.com/models/yolov3_r50vd_dcn_270e_coco.pdparams",openvino infered success,419.75,316.30,98.35,92.72
 "YoloV4,static/configs/yolov4/yolov4_cspdarknet_coco.yml,None",op mapper failed,NONE,NONE,NONE,NONE
 "YoloV4,static/configs/yolov4/yolov4_cspdarknet_voc.yml,https://paddlemodels.bj.bcebos.com/object_detection/yolov4_cspdarknet_voc.pdparams",op mapper failed,NONE,NONE,NONE,NONE
