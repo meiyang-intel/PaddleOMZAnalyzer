@@ -214,36 +214,7 @@ class PaddlePredictorExecutor(Executor):
             output_handle = self.predictor.get_output_handle(output_name)
             self.inference_results[output_name] = output_handle.copy_to_cpu()
 
-class PaddlenlpPredictor(Executor):
-    """
-    inputs and outputs of PaddlePredictor are dict.
-    """
-    def __init__(self, pdmodel, pdiparams):
-        super().__init__(pdmodel)
-        self.pdiparams = pdiparams
-        config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
-
-        config.disable_gpu()
-        config.set_cpu_math_library_num_threads(6)
-        # cache 10 different shapes for mkldnn to avoid memory leak
-        config.set_mkldnn_cache_capacity(10)
-        config.enable_mkldnn()
-
-        # # enable memory optim
-        config.enable_memory_optim()
-        config.disable_glog_info()
-
-        config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
-        config.switch_use_feed_fetch_ops(False)
-
-        self.predictor = paddle_infer.create_predictor(config)
-        # self.input_handles = [
-            # self.predictor.get_input_handle(name)
-            # for name in self.predictor.get_input_names()
-        # ]
-
-        # self.output_handle = self.predictor.get_output_handle(self.predictor.get_output_names()[0])
-
+class PaddlenlpPredictor(PaddlePredictorExecutor):
     def convert_example(self, example, tokenizer, max_seq_length=128):
         text = example
         encoded_inputs = tokenizer(text=text, max_seq_len=max_seq_length)
@@ -304,34 +275,6 @@ class PaddlenlpPredictor(Executor):
         test_inputs["token_type_ids"] = segment_ids
 
         return test_inputs
-
-    def inference(self, inputs:dict, warmup=0, repeats=1):
-        input_names = self.predictor.get_input_names()
-        for input_name in input_names:
-            input_handle = self.predictor.get_input_handle(input_name)
-            input_handle.reshape(inputs[input_name].shape)
-            input_handle.copy_from_cpu(inputs[input_name])
-
-        t0 = time.time()
-        #warmup
-        for i in range(warmup):
-            self.predictor.run()
-
-        t1 = time.time()
-        if warmup:
-            self.warmup_time = (t1 - t0) * 1000.0 / warmup
-
-        #repeats
-        for i in range(repeats):
-            self.predictor.run()
-        t2 = time.time()
-        self.repeat_time = (t2 - t1) * 1000.0 / repeats
-        print("PaddlePredictorExecutor Inference: {} ms per batch image".format(self.repeat_time))
-
-        output_names = self.predictor.get_output_names()
-        for output_name in output_names:
-            output_handle = self.predictor.get_output_handle(output_name)
-            self.inference_results[output_name] = output_handle.copy_to_cpu()
 
 class OpenvinoExecutor(Executor):
     """
