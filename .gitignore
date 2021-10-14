@@ -8,4 +8,5 @@ exporter/paddledet/
 exporter/paddlenlp/
 exporter/paddleseg/
 exporter/paddleocr/
+exporter/paddlerec/
 .vscode
