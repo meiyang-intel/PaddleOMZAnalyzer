@@ -1,0 +1,1 @@
+wide_deep,,,"concat,elementwise_add,lookup_table_v2,matmul,relu,reshape2,scale,sigmoid",None

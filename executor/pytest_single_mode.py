@@ -2,6 +2,7 @@ import pytest
 
 from executor_single_mode import performance_and_accuracy_test_single_mode
 
+# PaddleNLP
 @pytest.mark.parametrize(
     "model_file",
     [
@@ -17,6 +18,7 @@ def test_paddlenlp(model_file, batch_size):
     performance_and_accuracy_test_single_mode(model_file, batch_size, 1, 2, 'nlp')
 
 
+# PaddleOCR
 @pytest.mark.parametrize(
     "model_file",
     [
@@ -31,4 +33,16 @@ def test_paddlenlp(model_file, batch_size):
 )
 @pytest.mark.parametrize("batch_size", [1])
 def test_paddleocr(model_file, batch_size):
-    performance_and_accuracy_test_single_mode(model_file, batch_size, 1, 2, 'normal')    
+    performance_and_accuracy_test_single_mode(model_file, batch_size, 1, 2, 'normal')
+
+
+# PaddleRec
+@pytest.mark.parametrize(
+    "model_file",
+    [
+        '../exporter/paddlerec/wide_deep/rec_inference.pdmodel'
+    ]
+)
+@pytest.mark.parametrize("batch_size", [1])
+def test_paddlerec(model_file, batch_size):
+    performance_and_accuracy_test_single_mode(model_file, batch_size, 1, 2, 'nlp')
