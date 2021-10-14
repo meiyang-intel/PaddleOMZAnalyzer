@@ -13,6 +13,8 @@ sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
 
 import paddle
 import paddle.inference as paddle_infer
+from paddlenlp.data import Stack, Tuple, Pad
+from paddlenlp.transformers import BertTokenizer
 # from paddle.inference import Config
 # from paddle.inference import create_predictor
 
@@ -212,6 +214,114 @@ class PaddlePredictorExecutor(Executor):
             output_handle = self.predictor.get_output_handle(output_name)
             self.inference_results[output_name] = output_handle.copy_to_cpu()
 
+class PaddlenlpPredictor(Executor):
+    """
+    inputs and outputs of PaddlePredictor are dict.
+    """
+    def __init__(self, pdmodel, pdiparams):
+        super().__init__(pdmodel)
+        self.pdiparams = pdiparams
+        config = paddle_infer.Config(self.__pdmodel__, self.pdiparams)
+
+        config.disable_gpu()
+        config.switch_use_feed_fetch_ops(False)
+
+        self.predictor = paddle_infer.create_predictor(config)
+        # self.input_handles = [
+            # self.predictor.get_input_handle(name)
+            # for name in self.predictor.get_input_names()
+        # ]
+
+        # self.output_handle = self.predictor.get_output_handle(self.predictor.get_output_names()[0])
+
+    def convert_example(self, example, tokenizer, max_seq_length=128):
+        text = example
+        encoded_inputs = tokenizer(text=text, max_seq_len=max_seq_length)
+        input_ids = encoded_inputs["input_ids"]
+        segment_ids = encoded_inputs["token_type_ids"]
+
+        return input_ids, segment_ids
+
+    def generate_inputs(self, batch_size, language: str = 'English'):
+        test_inputs = dict()
+
+        if language == 'Chinese':
+            data = [
+                    '今天早上天气很好',
+                    '昨天真的好冷',
+                    '今天下午风就开始了，很大很大的风',
+                    '一觉睡到大天亮的话，精神一定会很饱满',
+                    '红豆生南国，春来发几枝，两支。'
+                    ]
+        elif language == 'English':
+            data = [
+                    'against shimmering cinematography that lends the setting the ethereal beauty of an asian landscape painting',
+                    'the situation in a well-balanced fashion',
+                    'at achieving the modest , crowd-pleasing goals it sets for itself',
+                    'so pat it makes your teeth hurt',
+                    'this new jangle of noise , mayhem and stupidity must be a serious contender for the title .'
+                    ]
+        else:
+            print("No support \"{}\" language".format(language))
+
+        label_map = {0: 'negative', 1: 'positive'}
+
+        self.tokenizer = BertTokenizer.from_pretrained(
+            os.path.dirname(self.__pdmodel__))
+
+        examples = []
+        for text in data:
+            input_ids, segment_ids = self.convert_example(
+                text,
+                self.tokenizer)
+            examples.append((input_ids, segment_ids))
+
+        # Seperates data into some batches.
+        batches = [
+            examples[idx:idx + batch_size]
+            for idx in range(0, len(examples), batch_size)
+        ]
+
+        # create lambda
+        batchify_fn = lambda samples, fn=Tuple(
+            Pad(axis=0, pad_val=self.tokenizer.pad_token_id, dtype="int64"),  # input
+            Pad(axis=0, pad_val=self.tokenizer.pad_token_id, dtype="int64"),  # segment
+        ): fn(samples)
+
+        # create input info
+        input_ids, segment_ids = batchify_fn(batches[0])
+        test_inputs["input_ids"] = input_ids
+        test_inputs["token_type_ids"] = segment_ids
+
+        return test_inputs
+
+    def inference(self, inputs:dict, warmup=0, repeats=1):
+        input_names = self.predictor.get_input_names()
+        for input_name in input_names:
+            input_handle = self.predictor.get_input_handle(input_name)
+            input_handle.reshape(inputs[input_name].shape)
+            input_handle.copy_from_cpu(inputs[input_name])
+
+        t0 = time.time()
+        #warmup
+        for i in range(warmup):
+            self.predictor.run()
+
+        t1 = time.time()
+        if warmup:
+            self.warmup_time = (t1 - t0) * 1000.0 / warmup
+
+        #repeats
+        for i in range(repeats):
+            self.predictor.run()
+        t2 = time.time()
+        self.repeat_time = (t2 - t1) * 1000.0 / repeats
+        print("PaddlePredictorExecutor Inference: {} ms per batch image".format(self.repeat_time))
+
+        output_names = self.predictor.get_output_names()
+        for output_name in output_names:
+            output_handle = self.predictor.get_output_handle(output_name)
+            self.inference_results[output_name] = output_handle.copy_to_cpu()
 
 class OpenvinoExecutor(Executor):
     """
@@ -381,7 +491,7 @@ def performance_and_accuracy_test_by_params(result_prefix_str, model_file, model
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow([result_prefix_str, result_level_dict[result_level]] + timestamps)
 
-def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0, repeats=1, openvino_api_type: str = 'sync'):
+def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0, repeats=1, predictor_type: str='normal', openvino_api_type: str = 'sync'):
     try:
         paddle_warmup_frame_time = None
         paddle_repeats_per_frame_time = None
@@ -392,18 +502,28 @@ def performance_and_accuracy_test_single_mode(model_file, batch_size=1, warmup=0
             print('model file "{}" not exists. Please specify it with --model_file argument.'.format(model_file))
             return
 
-        # create test data
-        pdpd_executor = PaddleExecutor(model_file)
-        test_inputs = pdpd_executor.generate_inputs(batch_size)
-
         # get the pdiparams file path
         dir_name = os.path.dirname(model_file)
         config_base = os.path.basename(model_file)
         config_base = os.path.splitext(config_base)[0]
         model_params_file = dir_name + '/' + config_base + '.pdiparams'
 
+        if not os.path.exists(model_params_file):
+            print('model params file "{}" not exists. Please check it.'.format(model_params_file))
+            return
+
+        # create test data
+        if predictor_type == 'nlp':
+            pdpd_predict_executor = PaddlenlpPredictor(str(model_file), str(model_params_file))
+            test_inputs = pdpd_predict_executor.generate_inputs(batch_size, language='English')
+        elif predictor_type == 'normal':
+            pdpd_executor = PaddleExecutor(model_file)
+            test_inputs = pdpd_executor.generate_inputs(batch_size)
+            pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), str(model_params_file))
+        else:
+            print('have no this {} paddle predictor type. Please check it.'.format(predictor_type))
+
         ## paddle predictor inference
-        pdpd_predict_executor = PaddlePredictorExecutor(str(model_file), str(model_params_file))
         pdpd_predict_executor.run(test_inputs, warmup, repeats)
         pdpd_predict_result = pdpd_predict_executor.get_inference_results()
         paddle_warmup_frame_time = "{:.2f}".format(pdpd_predict_executor.warmup_time) if pdpd_predict_executor.warmup_time is not None else 'None'
