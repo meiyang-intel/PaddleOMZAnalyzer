@@ -5,6 +5,7 @@ import paddle.fluid.core as core
 from pathlib import Path
 
 import os
+import argparse
 
 def append_fetch_ops(program, fetch_target_names, fetch_holder_name='fetch'):
     """
@@ -45,10 +46,10 @@ def get_ops(paddelmodel_dir):
     models = []
     for path in pdmodel:
         models.append(path)
-        print(path)
+        # print(path)
     for path in scattered:
         models.append(path)
-        print(path)
+        # print(path)
 
     if len(models) != 1:
         return 'ERROR'
@@ -74,20 +75,38 @@ def get_ops(paddelmodel_dir):
         if op.type not in { 'fetch', 'feed' }:
             operator_set.add(op.type)
 
+        # debug
+        if op.type in {'pad3d'}:
+            mode = op.attr('mode')
+            if mode == 'circular': # circular
+                print('{} has {} pad3d'.format(pdmodel_path, mode))
+
+
     return sorted(operator_set)
 
 
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_dir", type=str, default='', help="model dir")
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    __dir__ = os.path.dirname(os.path.abspath(__file__))
+    args = parse_args()
 
-    #*.pdmodel
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddleclas/MobileNetV3_large_x1_0'))
-    operator_set = get_ops(test_model)
+    if os.path.isdir(args.model_dir):
+        operator_set = get_ops(args.model_dir)
 
-    print(operator_set, len(operator_set))
+        # print(operator_set, len(operator_set))
+    else:
+        #*.pdmodel
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddleclas/MobileNetV3_large_x1_0'))
+        operator_set = get_ops(test_model)
 
-    # __model__
-    test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddledet/blazeface_keypoint'))
-    operator_set = get_ops(test_model)
+        print(operator_set, len(operator_set))
 
-    print(operator_set, len(operator_set))
+        # __model__
+        test_model = os.path.abspath(os.path.join(__dir__, '../exporter/paddledet/blazeface_keypoint'))
+        operator_set = get_ops(test_model)
+
+        print(operator_set, len(operator_set))
