@@ -10,7 +10,7 @@ paddle_frontend_path =os.path.abspath(os.path.join(__dir__, '../analyzer'))
 sys.path.insert(1, paddle_frontend_path)
 from paddle_frontend import paddle_frontend_supported_ops
 PDAnalyzerInfo=namedtuple('PDAnalyzerInfo', 'category total_models_downloadable total_models_exportable total_models_allops_converted total_ops_in_catogary total_ops_not_converted paddle_frontend_supported_ops_number unsupported_set')
-PDExecutorInfo=namedtuple('PDExecutorInfo', 'category total_models_executable total_models_accuracycheck_pass')
+PDExecutorInfo=namedtuple('PDExecutorInfo', 'category total_models_executable total_models_accuracycheck_pass total_models_accuracycheck_unpass_list total_models_unexecutable_list')
 
 ops_dict = {}
 # def count_model_info_by_file(analyzer_file_name, category):
@@ -24,9 +24,9 @@ def manage_analyzer_result(analyzer_file_name, category):
     analyzer_file_name = os.path.abspath(os.path.join(__dir__, '../analyzer/{}'.format(analyzer_file_name)))
     if not os.path.exists(analyzer_file_name):
         return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable,
-                            total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), 
+                            total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops),
                             sorted(sum_unsupported_ops_set))
-        
+
     begin_pattern = re.compile(r"\".+")
     end_pattern = re.compile(r".+\"")
     with open(analyzer_file_name, newline='') as csvfile:
@@ -64,17 +64,19 @@ def manage_analyzer_result(analyzer_file_name, category):
                     else:
                         total_models_allops_converted = total_models_allops_converted + 1
 
-        logging.debug(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), sum_unsupported_ops_set)
+        logging.debug(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), len(sum_unsupported_ops_set))
         return PDAnalyzerInfo(category, total_models_downloadable, total_models_exportable, total_models_allops_converted, len(sum_supported_ops_set), len(sum_unsupported_ops_set), len(paddle_frontend_supported_ops), sorted(sum_unsupported_ops_set))
 
 
 def manage_executor_result(executor_file_name, category):
     total_models_executable = 0
     total_models_accuracycheck_pass = 0
+    total_models_unexecutable_list = []
+    total_models_accuracycheck_unpass_list = []
 
     executor_file_name = os.path.abspath(os.path.join(__dir__, '../executor/{}'.format(executor_file_name)))
     if not os.path.exists(executor_file_name):
-        return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass)
+        return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass, total_models_accuracycheck_unpass_list, total_models_unexecutable_list)
 
     with open(executor_file_name, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
@@ -86,8 +88,15 @@ def manage_executor_result(executor_file_name, category):
                 total_models_executable = total_models_executable + 1
                 if status == 'infer accuracy pass':
                     total_models_accuracycheck_pass = total_models_accuracycheck_pass + 1
-        logging.debug(category, total_models_executable, total_models_accuracycheck_pass)
-        return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass)
+                else:
+                    total_models_accuracycheck_unpass_list.append((row[1], row[2].replace("\"", "")))
+
+            elif status == 'all ops mapped':
+                total_models_unexecutable_list.append((row[1], row[2].replace("\"", "")))
+
+
+        logging.debug(str(category), str(total_models_executable), str(total_models_accuracycheck_pass), str(len(total_models_accuracycheck_unpass_list)), str(len(total_models_unexecutable_list)))
+        return PDExecutorInfo(category, total_models_executable, total_models_accuracycheck_pass, total_models_accuracycheck_unpass_list, total_models_unexecutable_list)
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -107,7 +116,7 @@ def get_default_count_list():
     return default_list
 
 def main():
-    #logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.DEBUG)
+    # logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.DEBUG)
     logging.basicConfig(format='[%(levelname)s]-[%(filename)s:%(lineno)s] %(message)s', level=logging.INFO)
     args = parse_args()
 
@@ -115,6 +124,8 @@ def main():
     result_table_one.append(['category', 'total_models_downloadable', 'total_models_exportable', 'total_models_allops_converted', 'total_models_executable', 'total_models_accuracycheck_pass', 'total_models_accuracycheck_pass/total_models_exportable'])
     result_table_two = []
     result_table_two.append(['category', 'total_ops_in_catogary', 'total_ops_not_converted', 'paddle_frontend_supported_ops_number', 'total_ops_in_catogary/total_ops_not_converted', 'unsupported_set',''])
+    result_table_three = []
+    result_table_three.append(['category', 'model_yaml', 'model_params', 'failure_reason'])
     ops_result_table = []
 
     if args.analyzer_result_file != '' and args.category != '':
@@ -128,13 +139,19 @@ def main():
         if len(default_list) == 0:
             logging.error("get default_list failed.")
             return
-            
+
     for category, analyzer_file, executor_file in default_list:
         logging.info("{}: {}, {}.".format(category, analyzer_file, executor_file))
         result_analyzer = manage_analyzer_result(analyzer_file, category)
         result_executor = manage_executor_result(executor_file, category)
         result_table_one.append([result_analyzer.category, result_analyzer.total_models_downloadable, result_analyzer.total_models_exportable, result_analyzer.total_models_allops_converted, result_executor.total_models_executable, result_executor.total_models_accuracycheck_pass, str(result_executor.total_models_accuracycheck_pass) + '/' + str(result_analyzer.total_models_exportable)])
         result_table_two.append([result_analyzer.category, result_analyzer.total_ops_in_catogary, result_analyzer.total_ops_not_converted, result_analyzer.paddle_frontend_supported_ops_number, str(result_analyzer.total_ops_in_catogary) + '/' + str(result_analyzer.total_ops_not_converted), result_analyzer.unsupported_set, ''])
+        if category != 'ocr' and  category != 'nlp':
+            for yaml_file, params_file in result_executor.total_models_unexecutable_list:
+                result_table_three.append([result_analyzer.category, yaml_file, params_file, 'unexecutable'])
+
+            for yaml_file, params_file in result_executor.total_models_accuracycheck_unpass_list:
+                result_table_three.append([result_analyzer.category, yaml_file, params_file, 'inaccurate'])
 
     with open('./report.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -149,6 +166,10 @@ def main():
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['unsupported_op_name', 'total_models', 'models_list'])
         writer.writerows(sorted(ops_result_table))
+
+    with open('./report_unsupported_models.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerows(result_table_three)
 
 if __name__ == "__main__":
     main()
