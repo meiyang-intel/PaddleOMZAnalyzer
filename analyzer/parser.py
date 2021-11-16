@@ -16,6 +16,22 @@ def parse_model_ops(exported_path):
         if op not in paddle_frontend_supported_ops:
             unsupported_ops.append(op)
 
-    print(exported_path, operator_set, len(operator_set), unsupported_ops, len(unsupported_ops))
+    # print(exported_path, operator_set, len(operator_set), unsupported_ops, len(unsupported_ops))
 
     return sorted(operator_set), sorted(unsupported_ops)
+
+
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_dir", type=str, default='', help="model dir")
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    if os.path.isdir(args.model_dir):
+        operator_set, unsupported_ops = parse_model_ops(args.model_dir)
+
+        print(operator_set, len(operator_set))
+        print(unsupported_ops, len(unsupported_ops))

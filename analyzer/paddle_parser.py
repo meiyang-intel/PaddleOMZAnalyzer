@@ -68,18 +68,25 @@ def get_ops(paddelmodel_dir):
                     str(pdmodel_path.parent),
                     exe, model_filename='__model__', params_filename='__params__')
 
-    operator_set = set(())
-    # 输出计算图所有结点信息
-    for i, op in enumerate(prog.blocks[0].ops):
-        #print(i, op.type)
-        if op.type not in { 'fetch', 'feed' }:
-            operator_set.add(op.type)
+    # print(len(prog.blocks))
 
-        # debug
-        if op.type in {'pad3d'}:
-            mode = op.attr('mode')
-            if mode == 'circular': # circular
-                print('{} has {} pad3d'.format(pdmodel_path, mode))
+    operator_set = set(())
+    
+    for k in range(len(prog.blocks)):
+        # 输出计算图所有结点信息
+        for i, op in enumerate(prog.blocks[k].ops):
+            #print(i, op.type)
+            if op.type not in { 'fetch', 'feed' }:
+                operator_set.add(op.type)
+
+            # debug
+            # if op.type in {'pad3d'}:
+            #     mode = op.attr('mode')
+            #     if mode == 'circular': # circular
+            #         print('{} has {} pad3d'.format(pdmodel_path, mode))
+
+            # if op.type in {'distribute_fpn_proposals'}:
+            #     print('block {} has distribute_fpn_proposals {}'.format(k, i))
 
 
     return sorted(operator_set)
