@@ -70,14 +70,27 @@ def get_ops(paddelmodel_dir):
 
     # print(len(prog.blocks))
 
+    def get_tensor_shape(tensor_name):
+        for block in prog.blocks:
+            if tensor_name in block.vars:
+                var = block.vars[tensor_name]
+                if var.type.name in {'LOD_TENSOR', 'LOD_TENSOR_ARRAY'}: # others: STEP_SCOPES, FEED_MINIBATCH, FETCH_LIST, etc.
+                    return var.name, var.type, var.shape
+                return var.name, var.type, None
+        return None, None, None    
+
     operator_set = set(())
     
     for k in range(len(prog.blocks)):
         # 输出计算图所有结点信息
         for i, op in enumerate(prog.blocks[k].ops):
-            #print(i, op.type)
-            if op.type not in { 'fetch', 'feed' }:
-                operator_set.add(op.type)
+            # print("########", i, op.type)
+
+            if op.type in { 'fetch', 'feed' }:
+                continue
+            
+            #
+            operator_set.add(op.type)
 
             # debug
             # if op.type in {'pad3d'}:
@@ -85,9 +98,19 @@ def get_ops(paddelmodel_dir):
             #     if mode == 'circular': # circular
             #         print('{} has {} pad3d'.format(pdmodel_path, mode))
 
-            # if op.type in {'distribute_fpn_proposals'}:
-            #     print('block {} has distribute_fpn_proposals {}'.format(k, i))
+            # if op.type in {'write_to_array'}:
+            #     ta_name, ta_type, ta_shape = get_tensor_shape(op.output('Out')[0])
+            #     print('block {} has {} on tensorarray {} with shape {}'.format(k, op.type, ta_name, ta_shape))
+        
+            for ta in op.input_arg_names:
+                ta_name, ta_type, ta_shape = get_tensor_shape(ta)
+                if ta_type.name == 'LOD_TENSOR_ARRAY':
+                    print('block {} has {} on tensorarray input {} with shape {}'.format(k, op.type, ta_name, ta_shape))
 
+            for ta in op.output_arg_names:
+                ta_name, ta_type, ta_shape = get_tensor_shape(ta)
+                if ta_type.name == 'LOD_TENSOR_ARRAY':
+                    print('block {} has {} on tensorarray output {} with shape {}'.format(k, op.type, ta_name, ta_shape))
 
     return sorted(operator_set)
 
