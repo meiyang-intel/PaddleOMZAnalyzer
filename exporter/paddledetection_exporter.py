@@ -94,10 +94,21 @@ def main():
                 if os.path.exists(model_path) and (os.path.exists(os.path.join(model_path, 'model.pdmodel')) or os.path.exists(os.path.join(model_path, '__model__'))): # cached
                     logging.info('INFO: {} already exported. Ingnore it this time.'.format(config_base))
                     continue
+            
+            # 
+            extra_params = ''
+            # # for faster/mask rcnn models, use dynamic shape instead.
+            # export_shape = '[3,608,608]' # default
+            # regexp_rcnn = r'(rcnn\b)'
+            # match_rcnn = re.search(regexp_rcnn, config_yaml)
+            # if match_rcnn:
+            #     export_shape = '[3,-1,-1]'
+
+            # extra_params = 'TestReader.inputs_def.image_shape={}'.format(export_shape)
 
             # TODO: it might consumes all cpu/memory resources, so we'd better limit the size of concurrent working pipes.
-            exporter_cmd = 'chdir {} && python3 tools/export_model.py -c {} -o use_gpu=false weights={} TestReader.inputs_def.image_shape=[3,608,608] --output_dir {}'.format(
-                work_dir, config_yaml, pdparams_url, args.static_models_save_path)
+            exporter_cmd = 'chdir {} && python3 tools/export_model.py -c {} -o use_gpu=false weights={} {} --output_dir {}'.format(
+                work_dir, config_yaml, pdparams_url, extra_params, args.static_models_save_path)
             logging.info(exporter_cmd)
             p = subprocess.Popen(exporter_cmd, shell=True)
             pipes.append(p)
