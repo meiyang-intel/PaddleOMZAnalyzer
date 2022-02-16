@@ -1,4 +1,4 @@
-# https://github.com/openvinotoolkit/openvino/blob/master/ngraph/frontend/paddlepaddle/src/op_table.cpp
+# https://github.com/openvinotoolkit/openvino/blob/master/src/frontends/paddle/src/op_table.cpp
 # sed -i "s/{\"/'/g" test.txt
 # sed -i -r "s/\", op::.*}/'/g" test.txt
 paddle_frontend_supported_ops=set((
@@ -42,12 +42,14 @@ paddle_frontend_supported_ops=set((
         'leaky_relu',
         'linear_interp_v2',
         'log',
+        'logical_and',
         'logical_not',
+        'logical_or',
+        'logical_xor',
         'lookup_table_v2',
         'matmul',
         'matmul_v2',
         'max_pool2d_with_index',
-        'mul',
         'matrix_nms',
         'multiclass_nms3',
         'nearest_interp_v2',
@@ -57,6 +59,11 @@ paddle_frontend_supported_ops=set((
         'pool2d',
         'prior_box',
         'range',
+        'reduce_max',
+        'reduce_mean',
+        'reduce_min',
+        'reduce_prod',
+        'reduce_sum',
         'relu',
         'relu6',
         'reshape2',
@@ -65,6 +72,7 @@ paddle_frontend_supported_ops=set((
         'shape',
         'slice',
         'softmax',
+        'softplus',
         'sigmoid',
         'split',
         'squeeze2',
