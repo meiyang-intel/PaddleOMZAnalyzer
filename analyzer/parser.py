@@ -35,3 +35,8 @@ if __name__ == '__main__':
 
         print(operator_set, len(operator_set))
         print(unsupported_ops, len(unsupported_ops))
+
+
+#usage
+#
+#python3 parser.py --model_dir=../exporter/paddleocr/ch_ppocr_mobile_v2.0_cls_infer/
