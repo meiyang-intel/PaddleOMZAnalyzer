@@ -1,0 +1,5 @@
+pp-yolo,                    configs/ppyolo/ppyolo_r50vd_dcn_1x_coco.yml
+pp-yolo-v2-resnet50vd-dcn,  configs/ppyolo/ppyolov2_r50vd_dcn_365e_coco.yml
+ssdlite-mobilenet-v3-small-320-coco,    configs/ssd/ssdlite_mobilenet_v3_small_320_coco.yml
+yolo-v3-darknet-53,         configs/yolov3/yolov3_darknet53_270e_coco.yml
+faster_rcnn_resnet50_coco,  configs/faster_rcnn/faster_rcnn_r50_1x_coco.yml

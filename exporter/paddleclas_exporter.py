@@ -29,6 +29,7 @@ def parse_args():
     parser.add_argument("--dynamic_models_path", type=str, default=default_dynamic_models_path, help="where to find the dynamic models")
     parser.add_argument("--static_models_save_path", type=str, default=default_static_models_save_path, help="where to save the static models we exported")
     parser.add_argument("--subprocess_max_number", type=int, default=5, help="subprocess max number which used to limit the process number to prevent it consumes all cpu/memory resources")
+    parser.add_argument("--legacy", action='store_true', help="Use the legacy PaddleClas tools to export model")
 
     return parser.parse_args()
 
@@ -79,8 +80,12 @@ def main():
             pretraind_model = os.path.abspath(args.dynamic_models_path + '/{}'.format(file_name))
             output_path = os.path.abspath(args.static_models_save_path + '/{}'.format(config_base))
 
-            exporter_cmd = 'python3 tools/export_model.py --model {} --pretrained_model {} --output_path {} --class_dim 1000'.format(
-                config_base, pretraind_model, output_path)
+            if args.legacy:
+                exporter_cmd = 'python3 tools/export_model.py --model {} --pretrained_model {} --output_path {} --class_dim 1000'.format(
+                    config_base, pretraind_model, output_path)
+            else:
+                exporter_cmd = 'python3 tools/export_model.py -c {} -o Global.device=cpu -o Global.pretrained_model={} -o Global.save_inference_dir={}'.format(
+                    config_yaml, pretraind_model, output_path)
             logging.info('exporter_cmd: {}'.format(exporter_cmd))
             p = subprocess.Popen(exporter_cmd, shell=True)
             pipes.append(p)

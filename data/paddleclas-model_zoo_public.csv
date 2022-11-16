@@ -1,0 +1,5 @@
+resnet-50,              ppcls/configs/ImageNet/ResNet/ResNet50.yaml
+mobilenet-v1-1.0-224,   ppcls/configs/ImageNet/MobileNetV1/MobileNetV1.yaml
+mobilenet-v2,	        ppcls/configs/ImageNet/MobileNetV2/MobileNetV2.yaml
+mobilenet-v3-small-1.0-224,	        ppcls/configs/ImageNet/MobileNetV3/MobileNetV3_small_x1_0.yaml
+mobilenet-v3-large-1.0-224,	        ppcls/configs/ImageNet/MobileNetV3/MobileNetV3_large_x1_0.yaml

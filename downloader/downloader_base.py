@@ -12,6 +12,10 @@ from collections import namedtuple
 PDAllModelInfo=namedtuple('PDAllModelInfo', 'markdownfilename pdconfig pdparams')
 PDFiltedModelInfo=namedtuple('PDFiltedModelInfo', 'modelname pdconfig pdparams')
 
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(__dir__, '..')))
+from utils import download
+
 class base_downloader(object):
     __metaclass__ = ABCMeta
 
@@ -163,9 +167,10 @@ class base_downloader(object):
 
         logging.info('Downloading: {} from {}, save to {}'.format(file_name, pdparams_url, model_save_path))
         file_name = os.path.join(model_save_path, file_name)
-        r = requests.get(pdparams_url, allow_redirects=True)
-        with open(file_name, 'wb') as f:
-            f.write(r.content)
+        download(pdparams_url, file_name)
+        #r = requests.get(pdparams_url, allow_redirects=True)
+        #with open(file_name, 'wb') as f:
+        #    f.write(r.content)
 
     @abstractmethod
     def download_models(self):
